@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ইনভয়েস</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&display=swap');
+        body {
+            font-family: 'Noto Sans Bengali', sans-serif;
+        }
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans leading-normal text-gray-800">
+
+    <div class="max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-xl my-8">
+
+        <!-- Header -->
+        <header class="text-center border-b-2 border-gray-300 pb-4 mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">কলম মৎস্য আড়ৎ</h1>
+            <p class="text-sm text-gray-600 mb-1">প্রোপ: মোঃ শাহাদত হোসেন (শাবান)</p>
+            <p class="text-sm text-gray-500 mb-1">মোবাইল নং: ০১৭২৫-৭৯০৮৬৯, ০১৭৩২-৭৮৫০৬১, ০১৭০২-৭৮০৮৮৭</p>
+            <p class="text-sm text-gray-500">ঠিকানা: সিংড়া, বাসস্ট্যান্ড, সিংড়া, নাটোর।</p>
+        </header>
+
+        <!-- Invoice Details -->
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-8">
+            <div class="w-full sm:w-1/3 mb-4 sm:mb-0">
+                <p class="text-sm"><strong>মহাজন:</strong> <span class="text-gray-600">{{ $chalan->mohajon->name ?? 'N/A' }}</span></p>
+            </div>
+            <div class="w-full sm:w-1/3 mb-4 sm:mb-0 text-center">
+                <p class="text-sm"><strong>ইনভয়েস নম্বর:</strong> <span class="text-gray-600">{{ $chalan->invoice_no }}</span></p>
+            </div>
+            <div class="w-full sm:w-1/3 text-right">
+                <p class="text-sm"><strong>তারিখ:</strong> <span class="text-gray-600">{{ \Carbon\Carbon::parse($chalan->chalan_date)->format('d M Y') }}</span></p>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">পণ্যের তালিকা</h2>
+            <table class="w-full text-left table-auto border-collapse">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="py-3 px-4 border-b font-medium text-sm text-gray-600 rounded-tl-lg">#</th>
+                        <th class="py-3 px-4 border-b font-medium text-sm text-gray-600">পণ্যের নাম</th>
+                        <th class="py-3 px-4 border-b font-medium text-sm text-gray-600 text-center">পরিমাণ</th>
+                        <th class="py-3 px-4 border-b font-medium text-sm text-gray-600 text-right">মূল্য</th>
+                        <th class="py-3 px-4 border-b font-medium text-sm text-gray-600 text-right rounded-tr-lg">মোট মূল্য</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php
+                        $total = 0;
+                    @endphp
+                    @forelse($chalan->chalan_items as $item)
+                        <?php
+                            $total += $item->quantity;
+                        ?>
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-4 border-b text-sm text-gray-700">{{ $loop->iteration }}</td>
+                            <td class="py-3 px-4 border-b text-sm text-gray-700">{{ $item->item_name }}</td>
+                            <td class="py-3 px-4 border-b text-sm text-gray-700 text-center">{{ number_format($item->quantity, 2) }} কেজি</td>
+                            <td class="py-3 px-4 border-b text-sm text-gray-700 text-right">{{ number_format($item->unit_price, 2) }} টাকা</td>
+                            <td class="py-3 px-4 border-b text-sm text-gray-700 text-right">{{ number_format($item->quantity * $item->unit_price, 2) }} টাকা</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">কোনো পণ্য পাওয়া যায়নি।</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="2" class="text-end">মোট :</th>
+                        <th class="text-center">{{ number_format($total, 2) }} কেজি</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Expense and Total Section -->
+        <div class="flex flex-col sm:flex-row justify-between items-start mb-8">
+            <div class="w-full sm:w-1/2 md:w-2/3 mb-4 sm:mb-0 pr-0 sm:pr-8">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">খরচের বিবরণ</h2>
+                @forelse($chalan->chalan_expenses as $expense)
+                <div class="flex justify-between py-2 items-center">
+                    <span class="text-sm text-gray-600">{{ $expense->expense_type }}:</span>
+                    <span class="text-sm font-semibold text-gray-800">{{ number_format($expense->amount, 2) }} টাকা</span>
+                </div>
+                @empty
+                    <div style="grid-column: 1 / -1;" class="text-center text-muted">কোনো খরচ পাওয়া যায়নি।
+                    </div>
+                @endforelse
+                <!-- Add more expenses here as needed -->
+            </div>
+            <div class="w-full sm:w-1/2 md:w-1/3 bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div class="flex justify-between py-2 border-b border-gray-300">
+                    <span class="text-sm text-gray-600">যাবতীয় খরচ:</span>
+                    <span class="text-sm font-semibold text-gray-800">{{ number_format($chalan->total_expense, 2) }} টাকা</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-300">
+                    <span class="text-sm text-gray-600">কাঁচা বিক্রয়:</span>
+                    <span class="text-sm font-semibold text-gray-800">{{ number_format($chalan->subtotal, 2) }} টাকা</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-300">
+                    <span class="text-sm text-gray-600">পাকা বিক্রয়:</span>
+                    <span class="text-sm font-semibold text-gray-800">{{ number_format($chalan->total_amount, 2) }} টাকা</span>
+                </div>
+                <div class="text-center mt-4">
+                    <p class="text-lg font-bold text-pink-600">পেমেন্ট: {{ number_format($chalan->payment_amount, 2) }} টাকা</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Print Button (non-printable) -->
+        <div class="no-print mt-8 text-center">
+            <a href="javascript:history.back()" 
+                class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 mr-2">
+                Back
+            </a>
+            <button onclick="window.print()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-all">
+                Print Invoice
+            </button>
+        </div>
+
+    </div>
+
+</body>
+</html>
