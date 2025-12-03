@@ -62,10 +62,8 @@ class DailyController extends Controller
     }
 
 
-    public function store(Request $request)
-    {
-            // dd($request->all());
-
+        public function store(Request $request)
+        {
             $validatedData = $request->validate([
                 // Customer Validation
                 'mohajon_id' => 'required|exists:mohajons,id',
@@ -80,39 +78,40 @@ class DailyController extends Controller
                 'items.*.payment_amount' => 'numeric|min:0',
             ]);
 
+            $date = $validatedData['chalan_date'];
+            $mohajonId = $validatedData['mohajon_id'];
 
-
-            $date = $validatedData['chalan_date'] ?? null;
-            $mohajonId = $validatedData['mohajon_id'] ?? null;
-
+            $chalanItemsData = []; // <-- Must initialize array
 
             foreach ($validatedData['items'] as $item) {
-                $itemQuantity = (float) $item['quantity'];
-                $itemUnitPrice = (float) $item['unit_price'];
-                $finalItemTotal = $itemQuantity * $itemUnitPrice;
 
-                $productId = $item['item_name'];
-                $paikarId = $item['paikar_name'];
-                $payment = $item['payment_amount'];
+                $itemQuantity   = (float) $item['quantity'];
+                $itemUnitPrice  = (float) $item['unit_price'];
+                $payment        = (float) ($item['payment_amount'] ?? 0);
+
+                $finalItemTotal = $itemQuantity * $itemUnitPrice;
+                $dueAmount      = $finalItemTotal - $payment;
 
                 $chalanItemsData[] = [
-                    'mohajon_id' => $mohajonId,
-                    'customer_id' => $paikarId,
-                    'product_id' => $productId,
-                    'chalan_date' => $date,
-                    'quantity' => $itemQuantity,
-                    'amount'   => $itemUnitPrice,
-                    'total_amount' => $finalItemTotal,
-                    'payment_amount' => $payment,
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'mohajon_id'      => $mohajonId,
+                    'customer_id'     => $item['paikar_name'],
+                    'product_id'      => $item['item_name'],
+                    'chalan_date'     => $date,
+                    'quantity'        => $itemQuantity,
+                    'amount'          => $itemUnitPrice,
+                    'total_amount'    => $finalItemTotal,
+                    'payment_amount'  => $payment,
+                    'due'             => $dueAmount,        // <-- NEW FIELD
+                    'created_at'      => now(),
+                    'updated_at'      => now(),
                 ];
             }
 
             Daily::insert($chalanItemsData);
 
             return redirect()->route('daily.index')->with('success', 'দৈনিক ক্রয় সফলভাবে তৈরি হয়েছে!');
-    }
+        }
+
 
     public function destroy($id)
     {
@@ -185,7 +184,8 @@ $daily = Daily::find($request->order_id);
 
 if ($daily) {
     $daily->update([
-        'set_charged' => $daily->set_charged + $request->total_qty
+        'set_charged' => $daily->set_charged + $request->total_qty,
+        'due' => $daily->due + $request->total_charge
     ]);
 }
 

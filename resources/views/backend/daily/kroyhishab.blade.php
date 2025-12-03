@@ -72,7 +72,9 @@
                                     <th>পণ্যের পরিমাণ (কেজি)</th>
                                     <th>চার্জ এড হয়েছে (কেজি)</th>
                                     <th>পণ্যের দাম</th>
-                                    <th>মোট টাকা</th>
+                                    <th class="hidden">মোট টাকা</th>
+                                    <th class="hidden">Payment</th>
+                                    <th>Total Bill</th>
                                     <th>অপশন</th>
                                 </tr>
                             </thead>
@@ -88,7 +90,9 @@
                                         <td>{{ $daily->quantity ?? 'N/A' }}</td>
                                         <td>{{ $daily->set_charged ?? 'N/A' }}</td>
                                         <td>{{ number_format($daily->amount, 2) }}</td>
-                                        <td>{{ number_format($daily->total_amount, 2) }}</td>
+                                        <td class="hidden">{{ number_format($daily->total_amount, 2) }}</td>
+                                        <td class="hidden">{{ number_format($daily->payment_amount, 2) }}</td>
+                                        <td>{{ number_format($daily->due, 2) }}</td>
 
 
                                         {{-- ✅ New column with button --}}
@@ -124,9 +128,9 @@
                                 <tr>
                                     <td colspan="5" class="text-end fw-bold fs-6">মোট কেজি =</td>
                                     <td id="totalQty" class="fw-bold fs-6">{{ number_format($totalQty, 2) }}</td>
+                                    <td></td>
                                     <td class="text-end fw-bold fs-6">মোট টাকা =</td>
                                     <td id="totalAmount" class="fw-bold fs-6">{{ number_format($totalSum, 2) }}</td>
-                                    <td></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -164,7 +168,7 @@
 
                         <div class="mb-3">
                             <label class="form-label">মোট কেজি</label>
-                            <input type="text" id="totalKg" name="total_qty" class="form-control">
+                            <input type="text" id="totalKg" name="total_qty" class="form-control" readonly>
                         </div>
 
                         <div class="mb-3">
@@ -227,7 +231,7 @@
                     let amount = parseNumber($(row).find('td:eq(7)').text()); // 8 culumn
 
                     totalQty += qty;
-                    totalAmount += amount;
+                    totalAmount += total_amount;
                 });
 
                 $('#totalQty').text(totalQty.toFixed(2));
@@ -257,11 +261,11 @@
                 return match ? parseFloat(match[0]) : 0;
             }
 
-            // print only filtered paikar rows
             $('#paikarPrintBtn').on('click', function() {
                 var filteredRows = table.rows({
                     search: 'applied'
                 }).nodes();
+
                 if (filteredRows.length === 0) {
                     alert('কোনো তথ্য পাওয়া যায়নি!');
                     return;
@@ -269,17 +273,13 @@
 
                 let paikarIds = [];
                 $(filteredRows).each(function() {
-                    let id = $(this).find('td:eq(3)').data('paikar-id'); // ৪র্থ column (paikar)
+                    let id = $(this).find('td:eq(3)').data('paikar-id');
                     if (id) paikarIds.push(id);
                 });
 
-                // console.log(paikarIds);
-
-                // Dates
                 let fromDate = $('input[name="from_date"]').val();
                 let toDate = $('input[name="to_date"]').val();
 
-                // Ajax: get charge sum
                 $.ajax({
                     url: '/get-paikar-charge-sum',
                     method: 'POST',
@@ -290,16 +290,19 @@
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(res) {
-                        // বাদ দিতে চাও এমন হেডারের নাম
-                        let excludeCols = ["ক্রয়ের তারিখ", "পণ্যের দাম", "অপশন"];
 
-                        // সব হেডারের নাম collect
+                        let excludeCols = ["সিরিয়াল নং", "ক্রয়ের তারিখ", "অপশন", "মহাজনের নাম",
+                            "চার্জ এড হয়েছে (কেজি)",
+                            "মোট টাকা", "Payment"
+                        ];
+
                         let headers = [];
                         $('.datanew thead tr th').each(function() {
                             headers.push($(this).text().trim());
                         });
 
-                        // style + header
+                        console.log(res);
+
                         var printContent = `
                         <!DOCTYPE html>
                         <html>
@@ -310,8 +313,8 @@
                             .header-section { text-align: center; margin-bottom: 10px; }
                             .header-top-text { font-size: 6pt; margin-bottom: 5px; }
                             .main-title { font-size: 14pt; font-weight: bold; margin-bottom: 5px; line-height: 1.2; color: #3d5bbd; }
-                            .proprietor-info, .contact-info, .address-info { font-size: 6pt; margin-bottom: 5px; }
-                            .address-info { line-height: 1.5; }
+                            .proprietor-info, .contact-info { font-size: 6pt; margin-bottom: 5px; }
+                            .address-info { font-size: 6pt; line-height: 1.5; }
                             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
                             th, td { padding: 8px; text-align: center; border: 1px solid #000; }
                             .header { font-weight: bold; }
@@ -333,9 +336,8 @@
                         <table>
                             <thead>
                                 <tr class="header">
-                        `;
+                    `;
 
-                        // টেবিল হেডার exclude বাদ দিয়ে
                         headers.forEach(function(h) {
                             if (!excludeCols.includes(h)) {
                                 printContent += `<th>${h}</th>`;
@@ -346,48 +348,52 @@
                                 </tr>
                             </thead>
                             <tbody>
-                        `;
+                    `;
 
-                        // টেবিল রো + টোটাল হিসাব
                         let totalQty = 0;
-                        let totalAmount = 0;
+                        let dueAmount = 0; // <-- Only due will be counted
                         let totalCharge = 0;
                         let jer = 0;
-                        let grandTotal = 0;
 
                         $(filteredRows).each(function() {
                             let rowHtml = '';
-                            $(this).find('td').each(function(i, td) {
+                            let row = $(this);
+
+                            row.find('td').each(function(i, td) {
                                 let headerName = headers[i];
+
                                 if (!excludeCols.includes(headerName)) {
                                     let cellText = $(td).text().trim();
                                     rowHtml += `<td>${cellText}</td>`;
 
-                                    // Header name
+                                    // == Total Qty ==
                                     if (headerName === "পণ্যের পরিমাণ (কেজি)") {
                                         totalQty += toNumber(cellText);
                                     }
-                                    if (headerName === "মোট টাকা") {
-                                        totalAmount += toNumber(cellText);
+
+                                    // == Only Due Amount ==
+                                    if (headerName === "Total Bill") {
+                                        dueAmount += toNumber(cellText);
                                     }
                                 }
                             });
+
                             printContent += `<tr>${rowHtml}</tr>`;
                         });
 
-                        // Add charge_amount
-                        totalCharge += parseFloat(res.charge_amount) || 0;
-                        jer += parseFloat(res.jer) || 0;
-                        grandTotal = totalAmount + totalCharge + jer;
+                        totalCharge = parseFloat(res.charge_amount) || 0;
+                        jer = parseFloat(res.jer) || 0;
+
+                        let intotal = dueAmount;
+                        let grandTotal = dueAmount + jer;
 
                         printContent += `
-                            </tbody>
+                        </tbody>
                         </table>
 
                         <div class="total-row">
                             মোট কেজি = ${totalQty.toFixed(2)} <br>
-                            মোট চার্জ = ${totalCharge.toFixed(2)} <br>
-                            মোট টাকা = ${totalAmount.toFixed(2)}<br>
+                            মোট টাকা = ${intotal.toFixed(2)}<br>
                             জের = ${jer.toFixed(2)}
                         </div>
 
@@ -397,14 +403,13 @@
 
                         </body>
                         </html>
-                        `;
+                    `;
 
                         var myWindow = window.open('', '', 'width=800,height=600');
                         myWindow.document.write(printContent);
                         myWindow.document.close();
                         myWindow.focus();
 
-                        // Print এর পর window close
                         myWindow.onafterprint = function() {
                             myWindow.close();
                         };
@@ -413,9 +418,10 @@
                     }
                 });
             });
-
         });
     </script>
+
+
 
 
     <script>
@@ -435,9 +441,9 @@
 
                 // Set input value AND data attribute
                 $('#totalKg')
-                    .val('')
+                    .val(qty)
                     .data('qty', qty)
-                    .attr('placeholder', qty );
+                    .attr('placeholder', qty);
 
                 $('#chargePerKg').val('');
                 $('#totalCharge').val('');
