@@ -372,12 +372,12 @@
                                     alt="img"><span>আয়/ব্যয় হিসাব</span> <span class="menu-arrow"></span></a>
                             <ul>
 
-                                <li>
+                                {{-- <li>
                                     <a href="{{ route('paikar_charge.index') }}"
                                         class="{{ request()->routeIs('paikar_charge.index') ? 'active' : '' }}">
                                         পাইকারের চার্জ
                                     </a>
-                                </li>
+                                </li> --}}
                                 <li>
                                     <a href="{{ route('paikar_due.index') }}"
                                         class="{{ request()->routeIs('paikar_due.index') ? 'active' : '' }}">

@@ -26,6 +26,7 @@ class DashboardController extends Controller
         $year = date('Y');
         $from = $request->input('from_date');
         $to = $request->input('to_date');
+       
         return $this->loadChart($year, $from, $to);
     }
 
@@ -108,7 +109,18 @@ class DashboardController extends Controller
         $uttolon_amount = Helper::sum(Uttolon::class, 'amount', 'date', $from, $to);
 
         //cash
-        $totalcash = Cash::latest()->value('cash');
+        if($from&&$to){
+            $totalcash = Cash::where('date', '>=', $from)
+            ->where('date', '<=', $to)->sum('today_amount');
+        }
+        else
+        {
+            $totalcash = Cash::sum('today_amount');
+
+        }
+
+        // $totalcash=0;
+  
 
 
         return view('dashboard', compact('from','to','months', 'incomeData', 'expenseData', 'year', 'years','total_income','total_expense','total_baki','total_baki_aday','total_commission','totalBaki','totalamanot','uttolon_amount','totalcash','totalJoma'));

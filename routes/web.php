@@ -22,13 +22,14 @@ use Illuminate\Support\Facades\Auth;
 |
 */
 
-Route::get('/', function () {
-    return redirect()->to('login');
-});
+// Route::get('/', function () {
+//     return redirect()->to('login');
+// });
 
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard')->middleware(['auth']);
 
 
 
