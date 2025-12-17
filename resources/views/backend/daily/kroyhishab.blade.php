@@ -79,9 +79,14 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                <?php
+                                
+                                $serialNo = 1;
+                                
+                                ?>
                                 @foreach ($dailyKroy as $daily)
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $serialNo++ }}</td>
                                         <td>{{ \Carbon\Carbon::parse($daily->chalan_date)->format('d M Y') }}</td>
                                         <td>{{ $daily->mohajon->name ?? 'N/A' }}</td>
                                         <td data-paikar-id="{{ $daily->customer->id ?? '' }}">
@@ -152,19 +157,29 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        <!-- Hidden inputs to preserve filter state -->
+                        <input type="hidden" name="from_date" id="hiddenFromDate" value="{{ request('from_date') }}">
+                        <input type="hidden" name="to_date" id="hiddenToDate" value="{{ request('to_date') }}">
+                        <input type="hidden" name="search" id="hiddenSearch" value="{{ request('search') }}">
 
+                        <!-- DataTable state preservation -->
+                        <input type="hidden" name="dt_search" id="dtSearch">
+                        <input type="hidden" name="dt_page" id="dtPage">
+
+                        <!-- DataTable order and draw -->
+                        <input type="hidden" name="dt_order" id="dtOrder">
+                        <input type="hidden" name="dt_draw" id="dtDraw">
+
+                        <!-- Your existing form fields -->
                         <div class="mb-3">
                             <label class="form-label">পাইকারের নাম</label>
                             <input type="text" id="paikarName" class="form-control" readonly>
                             <input type="hidden" id="paikarId" name="paikar_id">
-
                         </div>
 
                         <div class="mb-3">
-
                             <input type="hidden" id="orderId" name="order_id">
                         </div>
-
 
                         <div class="mb-3">
                             <label class="form-label">মোট কেজি</label>
@@ -186,7 +201,6 @@
                             <input type="date" id="date" name="date" class="form-control"
                                 value="{{ \Carbon\Carbon::now('Asia/Dhaka')->toDateString() }}">
                         </div>
-
                     </div>
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-primary">জমা করুন</button>
@@ -211,6 +225,51 @@
     <script src="{{ asset('assets/js/script.js') }}"></script>
 
     <script>
+        $(document).ready(function() {
+
+            var table = $('.datanew').DataTable();
+
+            function parseNumber(val) {
+                if (!val) return 0;
+                return parseFloat(val.toString().replace(/,/g, '')) || 0;
+            }
+
+            function updateTotals() {
+                let totalQty = 0;
+                let totalAmount = 0;
+
+                // ONLY filtered (searched) rows
+                table.rows({
+                    search: 'applied'
+                }).every(function() {
+                    let row = this.node();
+
+                    // Qty column (index 5)
+                    let qty = parseNumber($(row).find('td:eq(5)').text());
+
+                    // Total Bill column (index 10)
+                    let amount = parseNumber($(row).find('td:eq(8)').text());
+
+                    totalQty += qty;
+                    totalAmount += amount;
+                });
+
+                $('#totalQty').text(totalQty.toFixed(2));
+                $('#totalAmount').text(totalAmount.toFixed(2));
+            }
+
+            // Run on search / pagination / filter
+            table.on('draw', function() {
+                updateTotals();
+            });
+
+            // First load
+            updateTotals();
+        });
+    </script>
+
+
+    {{-- <script>
         $(document).ready(function() {
             var table = $('.datanew').DataTable();
 
@@ -247,7 +306,7 @@
             updateTotals();
 
         });
-    </script>
+    </script> --}}
 
     <script>
         $(document).ready(function() {
@@ -291,7 +350,8 @@
                     },
                     success: function(res) {
 
-                        let excludeCols = ["সিরিয়াল নং", "ক্রয়ের তারিখ", "অপশন", "মহাজনের নাম",
+                        let excludeCols = ["সিরিয়াল নং", "ক্রয়ের তারিখ", "অপশন",
+                            "মহাজনের নাম",
                             "চার্জ এড হয়েছে (কেজি)",
                             "মোট টাকা", "Payment"
                         ];
@@ -481,6 +541,105 @@
                 $('#totalCharge').val((totalKg * chargePerKg).toFixed(2));
             });
 
+        });
+    </script>
+    <script>
+        // When filter form is submitted
+        $("form[action='{{ route('kroy.hishab') }}']").on('submit', function() {
+            var table = $('.datanew').DataTable();
+
+            // get current datatable state
+            $("#dtSearch").val(table.search());
+            $("#dtPage").val(table.page());
+        });
+    </script>
+
+
+    <script>
+        $(document).ready(function() {
+            var table = $('.datanew').DataTable();
+
+            let savedSearch = "{{ request('dt_search') }}";
+            let savedPage = "{{ request('dt_page') }}";
+
+
+            // Restore Search
+            if (savedSearch && savedSearch !== "null") {
+                table.search(savedSearch).draw(false);
+            }
+
+            // Restore Page
+            if (savedPage !== "" && savedPage !== "null") {
+                table.page(parseInt(savedPage)).draw(false);
+            }
+        });
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            var table = $('.datanew').DataTable();
+
+            // When charge button is clicked
+            $(document).on('click', '.paikarChargeBtn', function() {
+
+                // Capture current filter values
+                let fromDate = $('input[name="from_date"]').val();
+                let toDate = $('input[name="to_date"]').val();
+                let search = $('#searchInput').val(); // Get search input value
+
+                // Set hidden inputs with current filter values
+                $('#hiddenFromDate').val(fromDate);
+                $('#hiddenToDate').val(toDate);
+                $('#hiddenSearch').val(search);
+
+                // Capture DataTable state
+                $('#dtSearch').val(table.search());
+                $('#dtPage').val(table.page());
+                $('#dtOrder').val(JSON.stringify(table.order()));
+                $('#dtDraw').val(table.page.info().draw);
+
+                // Set paikar data
+                let paikarName = $(this).data('paikar-name');
+                let paikarId = $(this).data('paikar-id');
+                let qty = $(this).data('qty');
+                let orderId = $(this).data('order-id');
+
+                $('#paikarName').val(paikarName);
+                $('#paikarId').val(paikarId);
+                $('#orderId').val(orderId);
+
+                $('#totalKg')
+                    .val(qty)
+                    .data('qty', qty)
+                    .attr('placeholder', qty);
+
+                $('#chargePerKg').val('');
+                $('#totalCharge').val('');
+            });
+
+            // Restore state when page loads (for form submissions that redirect back)
+            $(document).ready(function() {
+                // Get the stored values from the page
+                let dtSearch = "{{ request('dt_search') }}";
+                let dtPage = "{{ request('dt_page') }}";
+                let dtOrder = "{{ request('dt_order') }}";
+                let dtDraw = "{{ request('dt_draw') }}";
+
+                // Restore if we're coming back from a form submission
+                if (dtSearch && dtSearch !== "null") {
+                    table.search(decodeURIComponent(dtSearch)).draw(false);
+                }
+
+                if (dtPage && dtPage !== "null") {
+                    table.page(parseInt(dtPage)).draw(false);
+                }
+
+                // Restore search input if coming from form submission
+                let searchValue = "{{ request('search') }}";
+                if (searchValue && searchValue !== "null") {
+                    $('#searchInput').val(decodeURIComponent(searchValue));
+                }
+            });
         });
     </script>
 @endsection

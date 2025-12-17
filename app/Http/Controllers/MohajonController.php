@@ -18,18 +18,67 @@ class MohajonController extends Controller
         return view('backend.mohajon.add');
     }
 
+
     public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required',
-            'phone' => 'nullable|unique:customers',
-            'address' => 'nullable',
-        ]);
+        {
+            $request->validate([
+                'name'    => 'required',
+                'phone'   => 'nullable|unique:mohajons',
+                'address' => 'nullable',
+            ]);
 
-        Mohajon::create($request->all());
+            // Create Mohajon
+            $mohajon = Mohajon::create($request->all());
 
-        return redirect()->back()->with('success', 'মহাজন সফলভাবে তৈরি হয়েছে!');
-    }
+            // If request expects JSON (for AJAX)
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'status'  => true,
+                    'mohajon' => $mohajon
+                ]);
+            }
+
+            // Normal web form redirect
+            return redirect()->back()->with('success', 'মহাজন সফলভাবে তৈরি হয়েছে!');
+        }
+
+
+        public function storeAjax(Request $request)
+        {
+            $validator = $request->validate([
+                'name' => 'required|string|max:255',
+                'phone' => 'nullable|string|max:20|unique:mohajons,phone',
+                'address' => 'nullable|string|max:500',
+            ]);
+
+            try {
+                $mohajon = Mohajon::create([
+                    'name' => $request->name,
+                    'phone' => $request->phone,
+                    'address' => $request->address,
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'মহাজন সফলভাবে যোগ করা হয়েছে!',
+                    'mohajon' => [
+                        'id' => $mohajon->id,
+                        'name' => $mohajon->name,
+                    ]
+                ]);
+
+            } catch (\Exception $e) {
+                \Log::error('Error creating Mohajon via AJAX: ' . $e->getMessage());
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'মহাজন যোগ করতে সমস্যা হয়েছে। অনুগ্রহ করে লগ চেক করুন।',
+                    'error_details' => $e->getMessage()
+                ], 500);
+            }
+        }
+
+
 
     public function edit($id)
     {

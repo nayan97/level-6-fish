@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('amount', 14, 2)->default(0);
             $table->decimal('total_amount', 14, 2)->default(0);
             $table->decimal('payment_amount', 14, 2)->default(0);
+            $table->decimal('due', 14, 2)->default(0);
             $table->enum('status', ['1', '0'])->default('0');
             $table->timestamps();
         });

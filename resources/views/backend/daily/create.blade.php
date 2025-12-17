@@ -313,7 +313,7 @@
                                                     name="items[0][payment_amount]" placeholder="0" value="0">
                                             </td>
                                             <td>
-                                                <button type="button" class="btn btn-danger remove-fish">×</button>
+                                                <button type="button" class="btn btn-danger remove-fish">x</button>
                                             </td>
                                         </tr>
                                     @endif
@@ -392,8 +392,9 @@
                     <h5 class="modal-title" id="mohajonModalLabel">নতুন মহাজন যোগ করুন</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('mohajons.store') }}" method="POST">
+                <form id="ajax-mohajon-form">
                     @csrf
+
                     <div class="modal-body">
                         <div class="form-group">
                             <label for="mohajon_name_modal">্মহাজনের নাম <span class="text-danger">*</span></label>
@@ -547,6 +548,69 @@
                 calculateGrandTotal(); // Recalculate after removing an item
             });
         });
+
+
+   $(document).ready(function() {
+
+    // AJAX submit for adding new Mohajon
+    $('#mohajonModal form').submit(function(e) {
+        e.preventDefault();
+
+        let formData = $(this).serialize();
+
+        $.ajax({
+            url: "{{ route('mohajons.store') }}",
+            method: "POST",
+            data: formData,
+            dataType: "json",
+            headers: {
+                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+                "Accept": "application/json"
+            },
+
+            success: function(res) {
+
+                // Close modal
+                $('#mohajonModal').modal('hide');
+
+                // Add new mohajon to select dropdown
+                $('select[name="mohajon_id"]').append(
+                    `<option value="${res.mohajon.id}">${res.mohajon.name}</option>`
+                );
+
+                // Auto-select newly created Mohajon
+                $('select[name="mohajon_id"]').val(res.mohajon.id).trigger('change');
+
+                // Update select2
+                $('.select2').select2();
+
+                // Success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'মহাজন সংযোজন সম্পন্ন',
+                    timer: 1500
+                });
+            },
+
+            error: function(err) {
+                let msg = 'কিছু ভুল হয়েছে';
+
+                if (err.responseJSON && err.responseJSON.errors) {
+                    msg = Object.values(err.responseJSON.errors)
+                        .map(v => v.join(', '))
+                        .join("\n");
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: msg
+                });
+            }
+        });
+    });
+
+});
+
 
 
         $(document).ready(function() {

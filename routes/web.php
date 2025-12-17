@@ -122,6 +122,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/mohajons/edit/{id}', [MohajonController::class, 'edit'])->name('mohajons.edit');
     Route::post('/dashboard/mohajons/update', [MohajonController::class, 'update'])->name('mohajons.update');
     Route::delete('/dashboard/mohajons/destroy/{id}', [MohajonController::class, 'destroy'])->name('mohajons.destroy');
+    Route::post('/customers/store-ajax', [MohajonController::class, 'storeAjax'])->name('mohajons.store_ajax');
 
 
 

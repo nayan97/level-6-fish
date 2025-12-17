@@ -38,6 +38,7 @@
                                 <tr>
                                     <th>Sl No.</th>
                                     <th>চালান খাত</th>
+                                    <th>Mohajon Name</th>
                                     <th>ফেরত পরিমান</th>
                                     <th>তারিখ</th>
                                     <th>নোট</th>
@@ -60,6 +61,8 @@
 
                                         {{-- Related Chalan Invoice No --}}
                                         <td>{{ $return->invoice_no ?? 'N/A' }}</td>
+                                       <td>{{ $return->mohajon->name ?? 'N/A' }}</td>
+
 
                                         {{-- Return Amount --}}
                                         <td>{{ $sum }}</td>

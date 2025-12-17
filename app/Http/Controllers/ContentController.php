@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use DB;
+use App\Models\Cash;
 use App\Models\Dadon;
 use App\Models\Amanot;
 use App\Models\Chalan;
@@ -90,6 +91,40 @@ class ContentController extends Controller
             'date' => 'required|date',
             'note' => 'nullable|string',
         ]);
+        
+
+                $today = Carbon::now('Asia/Dhaka')->toDateString();
+
+                // Get today cash row
+                $todayCash = Cash::where('date', $today)->first();
+
+                // Get previous day closing cash
+                $previousCashRow = Cash::where('date', '<', $today)
+                                        ->orderBy('date', 'desc')
+                                        ->first();
+
+                $previousCash = $previousCashRow ? $previousCashRow->cash : 0;
+
+                // Net change for this action
+                $netAmount = $validatedData['grand_total'] - $validatedData['payment_amount'];
+
+                if ($todayCash) {
+
+                    // 👉 UPDATE same day row
+                    $todayCash->today_amount += $validatedData['grand_total'];
+                    $todayCash->cash = $previousCash + $todayCash->today_amount;
+
+                    $todayCash->save();
+
+                } else {
+
+                    // 👉 CREATE new day row
+                    Cash::create([
+                        'date'         => $today,
+                        'today_amount' => $validatedData['grand_total'],
+                        'cash'         => $previousCash + $validatedData['grand_total'],
+                    ]);
+                }
 
         Amanot::create([
             'source' => $request->source,
@@ -163,6 +198,40 @@ class ContentController extends Controller
                 'date'      => now(),
                 'step'      => $stepText,   // 👈 added
             ]);
+
+
+                $today = Carbon::now('Asia/Dhaka')->toDateString();
+
+                // Get today cash row
+                $todayCash = Cash::where('date', $today)->first();
+
+                // Get previous day closing cash
+                $previousCashRow = Cash::where('date', '<', $today)
+                                        ->orderBy('date', 'desc')
+                                        ->first();
+
+                $previousCash = $previousCashRow ? $previousCashRow->cash : 0;
+
+                // Net change for this action
+                $netAmount = $validatedData['grand_total'] - $validatedData['payment_amount'];
+
+                if ($todayCash) {
+
+                    // 👉 UPDATE same day row
+                    $todayCash->today_amount += $validatedData['grand_total'];
+                    $todayCash->cash = $previousCash + $todayCash->today_amount;
+
+                    $todayCash->save();
+
+                } else {
+
+                    // 👉 CREATE new day row
+                    Cash::create([
+                        'date'         => $today,
+                        'today_amount' => $validatedData['grand_total'],
+                        'cash'         => $previousCash + $validatedData['grand_total'],
+                    ]);
+                }
 
             return response()->json([
                 'message'        => 'Amount returned successfully',

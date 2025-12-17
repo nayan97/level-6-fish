@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use App\Models\Cash;
 use App\Models\Daily;
 use App\Models\Chalan;
 use App\Models\Mohajon;
@@ -136,6 +137,38 @@ class ChalanController extends Controller
                 $chalan->chalan_expenses()->createMany($chalanExpensesData);
             }
 
+                $today = Carbon::now('Asia/Dhaka')->toDateString();
+
+                // Get today cash row
+                $todayCash = Cash::where('date', $today)->first();
+
+                // Get previous day closing cash
+                $previousCashRow = Cash::where('date', '<', $today)
+                                        ->orderBy('date', 'desc')
+                                        ->first();
+
+                $previousCash = $previousCashRow ? $previousCashRow->cash : 0;
+
+                // Net change for this action
+                $netAmount = $validatedData['grand_total'] - $validatedData['payment_amount'];
+
+                if ($todayCash) {
+
+                    // 👉 UPDATE same day row
+                    $todayCash->today_amount += $validatedData['grand_total'];
+                    $todayCash->cash = $previousCash + $todayCash->today_amount;
+
+                    $todayCash->save();
+
+                } else {
+
+                    // 👉 CREATE new day row
+                    Cash::create([
+                        'date'         => $today,
+                        'today_amount' => $validatedData['grand_total'],
+                        'cash'         => $previousCash + $validatedData['grand_total'],
+                    ]);
+                }
 
 
 
@@ -193,6 +226,8 @@ class ChalanController extends Controller
             ]);
 
             // dd($request->all());
+
+
 
 
             // Start a database transaction for atomicity
@@ -265,6 +300,41 @@ class ChalanController extends Controller
                         ->where('created_at', $urlDateTime)
                         // ->where('status', 0)
                         ->update(['status' => 1]);
+                }
+
+
+ 
+                $today = Carbon::now('Asia/Dhaka')->toDateString();
+
+                // Get today cash row
+                $todayCash = Cash::where('date', $today)->first();
+
+                // Get previous day closing cash
+                $previousCashRow = Cash::where('date', '<', $today)
+                                        ->orderBy('date', 'desc')
+                                        ->first();
+
+                $previousCash = $previousCashRow ? $previousCashRow->cash : 0;
+
+                // Net change for this action
+                $netAmount = $validatedData['grand_total'] - $validatedData['payment_amount'];
+
+                if ($todayCash) {
+
+                    // 👉 UPDATE same day row
+                    $todayCash->today_amount += $validatedData['grand_total'];
+                    $todayCash->cash = $previousCash + $todayCash->today_amount;
+
+                    $todayCash->save();
+
+                } else {
+
+                    // 👉 CREATE new day row
+                    Cash::create([
+                        'date'         => $today,
+                        'today_amount' => $validatedData['grand_total'],
+                        'cash'         => $previousCash + $validatedData['grand_total'],
+                    ]);
                 }
 
 
@@ -346,6 +416,38 @@ class ChalanController extends Controller
         'step'      => $stepText,  // 👈 NEW FIELD
     ]);
 
+                $today = Carbon::now('Asia/Dhaka')->toDateString();
+
+                // Get today cash row
+                $todayCash = Cash::where('date', $today)->first();
+
+                // Get previous day closing cash
+                $previousCashRow = Cash::where('date', '<', $today)
+                                        ->orderBy('date', 'desc')
+                                        ->first();
+
+                $previousCash = $previousCashRow ? $previousCashRow->cash : 0;
+
+                // Net change for this action
+                $netAmount = $validatedData['grand_total'] - $validatedData['payment_amount'];
+
+                if ($todayCash) {
+
+                    // 👉 UPDATE same day row
+                    $todayCash->today_amount += $validatedData['grand_total'];
+                    $todayCash->cash = $previousCash + $todayCash->today_amount;
+
+                    $todayCash->save();
+
+                } else {
+
+                    // 👉 CREATE new day row
+                    Cash::create([
+                        'date'         => $today,
+                        'today_amount' => $validatedData['grand_total'],
+                        'cash'         => $previousCash + $validatedData['grand_total'],
+                    ]);
+                }
     return response()->json([
         'message' => 'Amount returned successfully',
         'step'    => $stepText,
@@ -355,10 +457,11 @@ class ChalanController extends Controller
 
 public function history()
 {
-    $amanotReturned = Chalan::whereNotNull('return_amounts')
-                                    ->orderBy('id', 'desc')
-                                    ->get();
-
+$amanotReturned = Chalan::whereNotNull('return_amounts')
+    ->with('mohajon')
+    ->orderBy('id', 'desc')
+    ->get();
+    
     return view('backend.chalan.history', compact('amanotReturned'));
 }
 

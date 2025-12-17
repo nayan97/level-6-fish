@@ -188,9 +188,15 @@ if ($daily) {
         'due' => $daily->due + $request->total_charge
     ]);
 }
+//dd($request->all());
+return redirect()->route('kroy.hishab', [
+    'from_date' => $request->from_date,
+    'to_date' => $request->to_date,
+    'search' => $request->search,
+    'dt_search' => $request->dt_search,
+    'dt_page' => $request->dt_page,
+]);
 
-
-    return back()->with('success', 'পাইকার চার্জ সফলভাবে সংরক্ষণ হয়েছে।');
 }
 
 
