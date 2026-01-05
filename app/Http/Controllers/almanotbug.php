@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use DB;
-use Carbon\Carbon;
 use App\Models\Cash;
 use App\Models\Dadon;
 use App\Models\Amanot;
@@ -84,116 +83,39 @@ class ContentController extends Controller
     }
 
 
-    // public function amanot_store(Request $request)
-    // {
-    //     $request->validate([
-    //         'source' => 'required|string|max:255',
-    //         'amount' => 'required|numeric|min:0',
-    //         'date' => 'required|date',
-    //         'note' => 'nullable|string',
-    //     ]);
-        
-
-    //             $today = Carbon::now('Asia/Dhaka')->toDateString();
-
-    //             // Get today cash row
-    //             $todayCash = Cash::where('date', $today)->first();
-
-    //             // Get previous day closing cash
-    //             $previousCashRow = Cash::where('date', '<', $today)
-    //                                     ->orderBy('date', 'desc')
-    //                                     ->first();
-
-    //             $previousCash = $previousCashRow ? $previousCashRow->cash : 0;
-
-    //             // Net change for this action
-    //             $netAmount = $validatedData['grand_total'] - $validatedData['payment_amount'];
-
-    //             if ($todayCash) {
-
-    //                 // 👉 UPDATE same day row
-    //                 $todayCash->today_amount += $validatedData['grand_total'];
-    //                 $todayCash->cash = $previousCash + $todayCash->today_amount;
-
-    //                 $todayCash->save();
-
-    //             } else {
-
-    //                 // 👉 CREATE new day row
-    //                 Cash::create([
-    //                     'date'         => $today,
-    //                     'today_amount' => $validatedData['grand_total'],
-    //                     'cash'         => $previousCash + $validatedData['grand_total'],
-    //                 ]);
-    //             }
-
-    //     Amanot::create([
-    //         'source' => $request->source,
-    //         'amount' => $request->amount,
-    //         'date' => $request->date,
-    //         'note' => $request->note,
-    //     ]);
-
-    //     return redirect()->route('amanot.index')->with('success', 'Amanot added successfully.');
-        
-    // }
-    
     public function amanot_store(Request $request)
-{
-    // ✅ Store validated data
-    $validatedData = $request->validate([
-        'source' => 'required|string|max:255',
-        'amount' => 'required|numeric|min:0',
-        'date'   => 'required|date',
-        'note'   => 'nullable|string',
-    ]);
-
-    $today = Carbon::now('Asia/Dhaka')->toDateString();
-
-    // Get today cash row
-    $todayCash = Cash::where('date', $today)->first();
-
-    // Get previous day closing cash
-    $previousCashRow = Cash::where('date', '<', $today)
-        ->orderBy('date', 'desc')
-        ->first();
-
-    $previousCash = $previousCashRow ? $previousCashRow->cash : 0;
-
-    // ✅ Use amount from validated data
-    $amount = $validatedData['amount'];
-
-    if ($todayCash) {
-
-        // UPDATE same day row
-        $todayCash->today_amount += $amount;
-        //$todayCash->cash = $previousCash + $todayCash->today_amount;
-        $todayCash->cash += $amount;
-        $todayCash->save();
-
-    } else {
-
-        // CREATE new day row
-        Cash::create([
-            'date'         => $today,
-            'today_amount' => $amount,
-            'cash'         => $previousCash + $amount,
+    {
+        $request->validate([
+            'source' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'date' => 'required|date',
+            'note' => 'nullable|string',
         ]);
+        
+         $latestCash = Cash::latest()->first();  
+
+          $latestCash->cash += $request->amount;  
+
+            $latestCash->save();                 
+
+
+        Amanot::create([
+            'source' => $request->source,
+            'amount' => $request->amount,
+            'date' => $request->date,
+            'note' => $request->note,
+        ]);
+
+        return redirect()->route('amanot.index')->with('success', 'Amanot added successfully.');
+        
     }
-
-    Amanot::create($validatedData);
-
-    return redirect()
-        ->route('amanot.index')
-        ->with('success', 'Amanot added successfully.');
-}
 
             
     
     
     // amanot return
 
-  public function returnAmount(Request $request, $id)
+        public function returnAmount(Request $request, $id)
         {
             $request->validate([
                 'amount' => 'required|numeric|min:1',
@@ -388,7 +310,7 @@ class ContentController extends Controller
     public function dadon_store(Request $request)
     {
 
-        // ✅ Validate the form inputs
+        // тЬЕ Validate the form inputs
         $request->validate([
             'name' => 'nullable|string|max:255',
             'customer' => 'nullable|string|max:255',
@@ -397,7 +319,7 @@ class ContentController extends Controller
             'note' => 'nullable|string',
         ]);
 
-        // ✅ Store the data
+        // тЬЕ Store the data
         Dadon::create([
             'name' => $request->name,
             'customer' => $request->customer,
@@ -407,7 +329,7 @@ class ContentController extends Controller
             'note' => $request->note,
         ]);
 
-        // ✅ Redirect with success message
+        // тЬЕ Redirect with success message
         return redirect()->route('dadon_add.index')->with('success', 'Dadon entry created successfully.');
 
     }
@@ -430,7 +352,7 @@ class ContentController extends Controller
 
     $dadon->update($request->only(['name', 'customer', 'total_given_amount', 'due_pay_date', 'note']));
 
-    return redirect()->route('dadon_add.index')->with('success', 'দাদন সফলভাবে আপডেট হয়েছে');
+    return redirect()->route('dadon_add.index')->with('success', 'ржжрж╛ржжржи рж╕ржлрж▓ржнрж╛ржмрзЗ ржЖржкржбрзЗржЯ рж╣рзЯрзЗржЫрзЗ');
 
     }
 
@@ -438,7 +360,7 @@ class ContentController extends Controller
     {
         $dadon = Dadon::findOrFail($id);
         $dadon->delete();
-        return redirect()->back()->with('success', 'দাদন সফলভাবে ডিলিট হয়েছে!');
+        return redirect()->back()->with('success', 'ржжрж╛ржжржи рж╕ржлрж▓ржнрж╛ржмрзЗ ржбрж┐рж▓рж┐ржЯ рж╣ржпрж╝рзЗржЫрзЗ!');
     }
 
     public function paikar_due(Request $request)
@@ -503,7 +425,7 @@ class ContentController extends Controller
             'note' => $request->note,
         ]);
 
-        return redirect()->route('dadon_add.index')->with('success', 'জমা সফলভাবে রেকর্ড করা হয়েছে!');
+        return redirect()->route('dadon_add.index')->with('success', 'ржЬржорж╛ рж╕ржлрж▓ржнрж╛ржмрзЗ рж░рзЗржХрж░рзНржб ржХрж░рж╛ рж╣ржпрж╝рзЗржЫрзЗ!');
     }
 
     public function showCollection($id)
@@ -549,8 +471,6 @@ class ContentController extends Controller
             'amount' => $request->amount,
             'date' => $request->date,
         ]);
-
-        Cash::latest()->first()?->decrement('cash', $request->amount);
 
         return redirect()->route('uttolon.index')->with('success', 'uttolon added successfully.');
     }

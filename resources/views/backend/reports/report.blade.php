@@ -17,7 +17,7 @@
             <form id="returnForm">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Return Chalan Baki Amount</h5>
+                        <h5 class="modal-title">চালান বাকি ফেরত</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
 
@@ -25,12 +25,17 @@
                         <input type="hidden" id="returnAmanotId">
 
                         <div class="form-group">
-                            <label>Return Amount</label>
+                            <label>বাকির পরিমান</label>
+                            <input type="number" class="form-control" readonly id="currentDue">
+                        </div>
+
+                        <div class="form-group">
+                            <label>ফেরত পরিমান</label>
                             <input type="number" min="1" class="form-control" id="returnAmount" required>
                         </div>
 
                         <div class="form-group mt-2">
-                            <label>Note</label>
+                            <label>নোট</label>
                             <textarea class="form-control" id="returnNote"></textarea>
                         </div>
                     </div>
@@ -89,7 +94,7 @@
                                     <th>তারিখ</th>
                                     <th>মহাজন</th>
                                     <th>বাকী</th>
-                                    <th>Action</th>
+                                    <th>অপশন</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -101,11 +106,12 @@
                                             <td>{{ $chalan->invoice_no }}</td>
                                             <td>{{ \Carbon\Carbon::parse($chalan->chalan_date)->format('d M Y') }}</td>
                                             <td>{{ $chalan->mohajon->name ?? 'N/A' }}</td>
-                                            <td>৳ {{ number_format($chalan->total_amount - $chalan->payment_amount, 2) }}</td>
+                                            <td>৳ {{ number_format($chalan->total_amount - $chalan->payment_amount, 2) }}
+                                            </td>
                                             <td>
                                                 <button class="btn btn-primary text-white return-btn"
-                                                        data-id="{{ $chalan->id }}"
-                                                        data-amount="{{ $chalan->total_amount }}">
+                                                    data-id="{{ $chalan->id }}"
+                                                    data-amount="{{ number_format($chalan->total_amount - $chalan->payment_amount, 2)}}">
                                                     পরিশোধ করুন
                                                 </button>
 
@@ -143,6 +149,9 @@
         $(document).on('click', '.return-btn', function() {
             let id = $(this).data('id');
             let amount = $(this).data('amount');
+
+            // show current due
+            $('#currentDue').val(amount);
 
             $('#returnAmanotId').val(id);
             $('#returnAmount').attr('max', amount);

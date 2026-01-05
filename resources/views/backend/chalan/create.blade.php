@@ -119,7 +119,7 @@ $expensesName = [
     'লাইনম্যান',
     'বাস কুলি',
     'নৌকা ভাড়া',
-    'পাইকার ছুটি',
+    'পাইকার ছুট',
     'বাস ভাড়া',
     'ভ্যান ভাড়া',
     'রিক্সা ভাড়া',
@@ -478,7 +478,7 @@ $expensesName = [
                                             value="{{ old('grand_total') }}">
                                     </div>
                                     <div class="summary-row">
-                                        <span class="label">পেমেন্ট</span>
+                                        <span class="label">নগদ পেমেন্ট</span>
                                         <input type="number" step="0.01" name="payment_amount"
                                             class="form-control text-right @error('payment_amount') is-invalid @enderror"
                                             placeholder="0" id="payment-amount" style="width: 100px;"

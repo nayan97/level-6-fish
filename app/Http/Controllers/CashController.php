@@ -19,14 +19,22 @@ class CashController extends Controller
     public function index()
     {
 
+        $isDailyClosed = Cash::whereDate('date', today()->addDay())->exists() ? 1 : 0;
         $cashs = Cash::orderBy('id', 'desc')->get();
 
-        return view('backend.cash.index', compact('cashs'));
+        return view('backend.cash.index', compact('cashs','isDailyClosed'));
 
     }
 
     public function create()
     {
+
+         $isDailyClosed = Cash::whereDate('date', today()->addDay())->exists() ? 1 : 0;
+         if($isDailyClosed)
+         {
+            return redirect()->back()->with('error', 'Daily is already closed for cash entry.');
+
+         }
         // amanot
         $total_amount = Chalan::whereDate('chalan_date', Carbon::today())->sum('total_amount');
         $payment_amount = Chalan::whereDate('chalan_date', Carbon::today())->sum('payment_amount');
@@ -55,7 +63,23 @@ class CashController extends Controller
         $gotokalerpaikarBaki = abs($totalJomaWithPayment - $totalDailyKroyWithCharge);
 
         //cash
-        $totalcash = Cash::latest()->value('cash');
+
+
+        $today = Carbon::today();
+
+        // latest cash
+        $totalcash = Cash::latest()->value('cash') ?? 0;
+
+        // today amount (example: today amanot / today cash entry)
+        $today_amount = Cash::whereDate('created_at', $today)
+                            ->sum('today_amount'); // change column name if needed
+
+        $totalcash = $totalcash - $today_amount;
+
+     
+        
+
+
 
         return view('backend.cash.add',compact('todayamanot','todaycommission','gotokalerpaikarBaki','totalcash'));
     }
@@ -93,8 +117,9 @@ class CashController extends Controller
             'cash' => $cash,
             'today_commisoin' => $request->commission,
             'pre_day_paikar_due' => $request->goto_kaler_baki,
-            'today_amount' => $request->ajker_amanot,
+            'today_amount' => 0.00,
             'total_amanot' => $request->left_side_total,
+            'date' => Carbon::today()->addDays(1),
         ]);
 
 

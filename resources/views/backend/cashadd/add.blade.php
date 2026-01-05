@@ -1,20 +1,18 @@
 @extends('backend.layouts.app')
 
 @section('css')
-
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
 
     <link rel="stylesheet" href="{{ asset('assets/css/animate.css') }}">
 
     <link rel="stylesheet" href="{{ asset('assets/css/dataTables.bootstrap4.min.css') }}">
 
-    <link rel="stylesheet" href="{{asset('assets/plugins/select2/css/select2.min.css')}}">
+    <link rel="stylesheet" href="{{ asset('assets/plugins/select2/css/select2.min.css') }}">
 
     <link rel="stylesheet" href="{{ asset('assets/plugins/fontawesome/css/fontawesome.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/plugins/fontawesome/css/all.min.css') }}">
 
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
-
 @endsection
 
 
@@ -23,26 +21,19 @@
         <div class="content">
             <div class="page-header">
                 <div class="page-title">
-                    <h4>আমানত সংযোজন</h4>
+                    <h4>ক্যাশ সংযোজন</h4>
+
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-body">
 
-                    <form class="form-horizontal" action="{{ route('amanot.store') }}" method="POST" enctype="multipart/form-data">
+                    <form class="form-horizontal" action="{{ route('cashadd.store') }}" method="POST"
+                        enctype="multipart/form-data">
                         @csrf
 
                         <div class="row">
-
-                            <div class="col-lg-6 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <label>আমানতের উৎস</label>
-                                    <input type="text" name="source" class="form-control" id="" placeholder="">
-                                </div>
-                            </div>
-
-
                             <div class="col-lg-6 col-sm-6 col-12">
                                 <div class="form-group">
                                     <label>টাকার পরিমান</label>
@@ -51,23 +42,16 @@
                             </div>
                             <div class="col-lg-6 col-sm-6 col-12">
                                 <div class="form-group">
-                                    <label>আমানত সংগ্রহের তারিখ</label>
-                                    <input type="date" name="date" class="form-control" id="" placeholder="" value="{{ \Carbon\Carbon::now('Asia/Dhaka')->toDateString() }}">
-                                </div>
-                            </div>
-
-
-                            <div class="col-lg-6 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <label>নোট</label>
-                                    <textarea class="form-control" name="note" ></textarea>
+                                    <label>ক্যাশ সংযোগের তারিখ</label>
+                                    <input type="date" name="date" class="form-control" value="{{ date('Y-m-d') }}"
+                                        readonly>
                                 </div>
                             </div>
 
 
                             <div class="col-lg-12">
-                                <a href="{{route('amanot.index')}}" class="btn btn-cancel">বাতিল করুন</a>
-                                <button  type="submit" class="btn btn-submit me-2">জমা করুন</button>
+                                <button type="submit" class="btn btn-submit me-2">Submit</button>
+                                <a href="{{ route('cashadd.index') }}" class="btn btn-cancel">Cancel</a>
                             </div>
 
                         </div>
@@ -92,10 +76,10 @@
 
     <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 
-    <script src="{{asset('assets/plugins/select2/js/select2.min.js')}}"></script>
+    <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}"></script>
 
-    <script src="{{asset('assets/plugins/sweetalert/sweetalert2.all.min.js')}}"></script>
-    <script src="{{asset('assets/plugins/sweetalert/sweetalerts.min.js')}}"></script>
+    <script src="{{ asset('assets/plugins/sweetalert/sweetalert2.all.min.js') }}"></script>
+    <script src="{{ asset('assets/plugins/sweetalert/sweetalerts.min.js') }}"></script>
 
     <script src="{{ asset('assets/js/script.js') }}"></script>
 @endsection

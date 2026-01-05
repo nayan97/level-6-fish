@@ -24,7 +24,7 @@
         <div class="content">
             <div class="page-header">
                 <div class="page-title">
-                    <h4>ক্রয়ের তালিকা বিস্তারিত</h4>
+                    <h4>নিলামের তালিকা বিস্তারিত</h4>
                 </div>
             </div>
 
@@ -73,7 +73,7 @@
                                     <th>চার্জ এড হয়েছে (কেজি)</th>
                                     <th>পণ্যের দাম</th>
                                     <th class="hidden">মোট টাকা</th>
-                                    <th class="hidden">Payment</th>
+                                    <th class="hidden">নগদ পেমেন্ট</th>
                                     <th>Total Bill</th>
                                     <th>অপশন</th>
                                 </tr>
@@ -386,11 +386,11 @@
 
                         <div class="header-section">
                             <div class="header-top-text">বিসমিল্লাহির রাহমানির রাহিম</div>
-                            <div class="main-title">কলম মৎস্য আড়ত</div>
-                            <div class="proprietor-info">প্রোঃ মোঃ শাহাজান হোসেন (শাহান)</div>
-                            <div class="contact-info">মোবাঃ ০১৯২৩-৭৮০৮৬২, ০১৭৯২-৭৮০৮৬২</div>
+                            <div class="main-title">কলম মৎস্য আড়ৎ</div>
+                            <div class="proprietor-info">প্রোঃ মোঃ শাহাদৎ হোসেন (শাবান)</div>
+                            <div class="contact-info">মোবাঃ ০১৭১৩-৭৮০৮৬৫, ০১৩১২-৭৮০৮৬৫, ০১৩১২-৭৮০৮৬৭</div>
                             <div class="contact-info">তারিখ: {{ en2bn($today) }}</div>
-                            <div class="address-info">ডেমকাম ও গিংহা বাসস্ট্যান্ড, সিংড়া, নাটোর।</div>
+                            <div class="address-info">মোকামঃ সিংড়া, বাসস্ট্যান্ড, সিংড়া, নাটোর।</div>
                         </div>
 
                         <table>

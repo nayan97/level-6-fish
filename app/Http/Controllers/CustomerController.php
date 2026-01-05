@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
+use App\Models\Cash;
+use App\Models\Daily;
 use App\Models\Customer;
 use App\Models\CustomerJoma;
 use Illuminate\Http\Request;
@@ -126,19 +129,49 @@ public function store(Request $request)
         $customers = Customer::all();
         return view('backend.customer.jomaadd', compact('customers'));
     }
-
-    public function jomastore(Request $request)
+    public function getCustomerBalance($id)
     {
-        $request->validate([
-            'customer_id' => 'required|exists:customers,id',
-            'jomartaka' => 'required|numeric',
-            'jomardate' => 'required|date',
+        $customer = Customer::findOrFail($id);
+        // $customer=Daily::where('customer_id',$id)->sum('due');
+        // dd($customer->balance);
+
+        return response()->json([
+            'balance' => abs($customer->balance),
         ]);
-
-        CustomerJoma::create($request->all());
-
-        return redirect()->route('customers_joma.index')->with('success', 'জমা সফলভাবে তৈরি হয়েছে!');
     }
+
+
+        public function jomastore(Request $request)
+        {
+            // Validate with correct field names (match your form)
+            $request->validate([
+                'customer_id' => 'required|exists:customers,id',
+                'amount' => 'required|numeric|min:0.01', // Changed from jomartaka to amount
+                'jomardate' => 'required|date',
+            ]);
+
+            // Debug: Check what data is coming
+            // dd($request->all());
+
+            // Format the date properly
+            $formattedDate = Carbon::parse($request->jomardate)->format('Y-m-d');
+
+            // Create the record with proper field mapping
+            CustomerJoma::create([
+                'customer_id' => $request->customer_id,
+                'jomartaka' => $request->amount, // Map 'amount' to 'jomartaka' column
+                'jomardate' => $formattedDate,
+                'user_id' => auth()->id(), // Add if needed
+            ]);
+
+            // Update cash
+            $latestCash = Cash::latest()->first();
+            if ($latestCash) {
+                $latestCash->increment('cash', $request->amount);
+            }
+
+            return redirect()->route('customers_joma.index')->with('success', 'জমা সফলভাবে তৈরি হয়েছে!');
+        }
 
 
     public function jomaDestroy($id)

@@ -1,15 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ContentController;
-use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\MohajonController;
-use App\Http\Controllers\ChalanController;
-use App\Http\Controllers\DailyController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\CashController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CashController;
+use App\Http\Controllers\DailyController;
+use App\Http\Controllers\ChalanController;
+use App\Http\Controllers\CashAddController;
+use App\Http\Controllers\ContentController;
+use App\Http\Controllers\MohajonController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -90,6 +91,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/dashboard/uttolon_store', [ContentController::class, 'uttolon_store'])->name('uttolon.store');
     Route::get('/dashboard/uttolon_destroy/{id}', [ContentController::class, 'uttolon_destroy'])->name('uttolon.destroy');
     
+    //cash add
+    Route::get('/dashboard/cashadd', [CashAddController::class, 'index'])->name('cashadd.index');
+    Route::get('/dashboard/cashadd_create', [CashAddController::class, 'create'])->name('cashadd.create');
+    Route::post('/dashboard/cashadd_store', [CashAddController::class, 'store'])->name('cashadd.store');
+    Route::get('/dashboard/cashadd_destroy/{id}', [CashAddController::class, 'destroy'])->name('cashadd.destroy');
+
     //cash
     Route::get('/dashboard/cash', [CashController::class, 'index'])->name('cash.index');
     Route::get('/dashboard/cash/create', [CashController::class, 'create'])->name('cash.create');
@@ -110,6 +117,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/dashboard/customers/update', [CustomerController::class, 'update'])->name('customers.update');
     Route::delete('/dashboard/customers/destroy/{id}', [CustomerController::class, 'destroy'])->name('customers.destroy');
     Route::post('/customers/store-ajax', [CustomerController::class, 'storeAjax'])->name('customers.store_ajax');
+
+    Route::get('/customer/balance/{id}', [CustomerController::class, 'getCustomerBalance']);
+
 
     Route::get('/dashboard/customers/jomalist', [CustomerController::class, 'jomaList'])->name('customers_joma.index');
     Route::get('/dashboard/customers/joma/create', [CustomerController::class, 'jomaCreate'])->name('customers_joma.create');

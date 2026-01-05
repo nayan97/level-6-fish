@@ -425,20 +425,20 @@
                         <li>
                             <a href="{{ route('amanot.history') }}"
                                 class="{{ request()->routeIs('amanot.history') ? 'active' : '' }}">
-                                ফেরত তালিকা
+                               আমানত ফেরতের তালিকা
                             </a>
                         </li>
                     </ul>
                     </li>
                     <li class="submenu">
                         <a href="javascript:void(0);"><img src="{{ asset('assets/img/icons/product.svg') }}"
-                                alt="img"><span>চালান</span> <span class="menu-arrow"></span></a>
+                                alt="img"><span>চালান বই</span> <span class="menu-arrow"></span></a>
                         <ul>
 
                             <li>
                                 <a href="{{ route('chalans.index') }}"
                                     class="{{ request()->routeIs('chalans.index') ? 'active' : '' }}">
-                                    চালানের তালিকা
+                                চালানের তালিকা
                                 </a>
                             </li>
                         </ul>
@@ -446,17 +446,17 @@
 
                     <li class="submenu">
                         <a href="javascript:void(0);"><img src="{{ asset('assets/img/icons/product.svg') }}"
-                                alt="img"><span>চালান খাতা</span> <span class="menu-arrow"></span></a>
+                                alt="img"><span>নিলাম খাতা</span> <span class="menu-arrow"></span></a>
                         <ul>
 
                             <li>
                                 <a href="{{ route('daily.index') }}"
                                     class="{{ request()->routeIs('daily.index') ? 'active' : '' }}">
-                                    দৈনিক ক্রয়ের তালিকা
+                                    দৈনিক নিলামের তালিকা
                                 </a>
                                 <a href="{{ route('kroy.hishab') }}"
                                     class="{{ request()->routeIs('kroy.hishab') ? 'active' : '' }}">
-                                    ক্রয়ের তালিকা বিস্তারিত
+                                    নিলামের তালিকা বিস্তারিত
                                 </a>
                             </li>
                         </ul>
@@ -464,12 +464,17 @@
 
                     <li class="{{ request()->routeIs('uttolon.index') ? 'active' : '' }}">
                         <a href="{{ route('cash.index') }}"><img src="{{ asset('assets/img/icons/cash.svg') }}"
-                                alt="img"><span>ক্যাশ খাতা</span></a>
+                                alt="img"><span>দৈনিক ক্যাশ ক্লোজ</span></a>
+                    </li>
+                    <li class="{{ request()->routeIs('cashadd.index') ? 'active' : '' }}">
+                        <a href="{{ route('cashadd.index') }}"><img
+                                src="{{ asset('assets/img/icons/wallet1.svg') }}"
+                                alt="img"><span>ক্যাশ সংযোজন</span></a>
                     </li>
                     <li class="{{ request()->routeIs('uttolon.index') ? 'active' : '' }}">
                         <a href="{{ route('uttolon.index') }}"><img
                                 src="{{ asset('assets/img/icons/wallet1.svg') }}"
-                                alt="img"><span>উত্তোলন</span></a>
+                                alt="img"><span>ক্যাশ উত্তোলন</span></a>
                     </li>
 
 

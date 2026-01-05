@@ -125,50 +125,51 @@ class ChalanController extends Controller
                 // 'discount_percent' => $validatedData['overall_discount_percent'] ?? 0,
                 // 'vat_amount' => $validatedData['overall_vat_amount'] ?? 0,
                 // 'vat_percent' => $validatedData['overall_vat_percent'] ?? 0,
-                'commission_amount' => $validatedData['commission_amount'] ?? 0,
-                'commission_percent' => $validatedData['commission_percent'] ?? 0,
-                'total_expense' => $validatedData['total_expenses_amount'] ?? 0,
-                'total_amount' => $validatedData['grand_total'] ?? 0,
-                'payment_amount' => $validatedData['payment_amount'] ?? 0,
+                'commission_amount' => round($validatedData['commission_amount'] ?? 0),
+                'commission_percent' => round($validatedData['commission_percent'] ?? 0),
+                'total_expense' => round($validatedData['total_expenses_amount'] ?? 0),
+                'total_amount' => round($validatedData['grand_total'] ?? 0),
+                'payment_amount' => round($validatedData['payment_amount'] ?? 0),
             ]);
 
             $chalan->chalan_items()->createMany($chalanItemsData);
             if (!empty($chalanExpensesData)) {
                 $chalan->chalan_expenses()->createMany($chalanExpensesData);
             }
+              Cash::latest()->first()?->decrement('cash',  $validatedData['payment_amount'] );
 
-                $today = Carbon::now('Asia/Dhaka')->toDateString();
+                // $today = Carbon::now('Asia/Dhaka')->toDateString();
 
-                // Get today cash row
-                $todayCash = Cash::where('date', $today)->first();
+                // // Get today cash row
+                // $todayCash = Cash::where('date', $today)->first();
 
-                // Get previous day closing cash
-                $previousCashRow = Cash::where('date', '<', $today)
-                                        ->orderBy('date', 'desc')
-                                        ->first();
+                // // Get previous day closing cash
+                // $previousCashRow = Cash::where('date', '<', $today)
+                //                         ->orderBy('date', 'desc')
+                //                         ->first();
 
-                $previousCash = $previousCashRow ? $previousCashRow->cash : 0;
+                // $previousCash = $previousCashRow ? $previousCashRow->cash : 0;
 
-                // Net change for this action
-                $netAmount = $validatedData['grand_total'] - $validatedData['payment_amount'];
+                // // Net change for this action
+                // $netAmount = $validatedData['grand_total'] - $validatedData['payment_amount'];
 
-                if ($todayCash) {
+                // if ($todayCash) {
 
-                    // 👉 UPDATE same day row
-                    $todayCash->today_amount += $validatedData['grand_total'];
-                    $todayCash->cash = $previousCash + $todayCash->today_amount;
+                //     // 👉 UPDATE same day row
+                //     $todayCash->today_amount += $validatedData['grand_total'];
+                //     $todayCash->cash = $previousCash + $todayCash->today_amount;
 
-                    $todayCash->save();
+                //     $todayCash->save();
 
-                } else {
+                // } else {
 
-                    // 👉 CREATE new day row
-                    Cash::create([
-                        'date'         => $today,
-                        'today_amount' => $validatedData['grand_total'],
-                        'cash'         => $previousCash + $validatedData['grand_total'],
-                    ]);
-                }
+                //     // 👉 CREATE new day row
+                //     Cash::create([
+                //         'date'         => $today,
+                //         'today_amount' => $validatedData['grand_total'],
+                //         'cash'         => $previousCash + $validatedData['grand_total'],
+                //     ]);
+                // }
 
 
 
@@ -274,11 +275,11 @@ class ChalanController extends Controller
                 // 'discount_percent' => $validatedData['overall_discount_percent'] ?? 0,
                 // 'vat_amount' => $validatedData['overall_vat_amount'] ?? 0,
                 // 'vat_percent' => $validatedData['overall_vat_percent'] ?? 0,
-                'commission_amount' => $validatedData['commission_amount'] ?? 0,
-                'commission_percent' => $validatedData['commission_percent'] ?? 0,
-                'total_expense' => $validatedData['total_expenses_amount'] ?? 0,
-                'total_amount' => $validatedData['grand_total'] ?? 0,
-                'payment_amount' => $validatedData['payment_amount'] ?? 0,
+                'commission_amount' => round($validatedData['commission_amount'] ?? 0),
+                'commission_percent' => round($validatedData['commission_percent'] ?? 0),
+                'total_expense' => round($validatedData['total_expenses_amount'] ?? 0),
+                'total_amount' => round($validatedData['grand_total'] ?? 0),
+                'payment_amount' => round($validatedData['payment_amount'] ?? 0),
             ]);
 
             $chalan->chalan_items()->createMany($chalanItemsData);
@@ -301,41 +302,42 @@ class ChalanController extends Controller
                         // ->where('status', 0)
                         ->update(['status' => 1]);
                 }
+            Cash::latest()->first()?->decrement('cash',  $validatedData['payment_amount'] );
 
 
  
-                $today = Carbon::now('Asia/Dhaka')->toDateString();
+                // $today = Carbon::now('Asia/Dhaka')->toDateString();
 
-                // Get today cash row
-                $todayCash = Cash::where('date', $today)->first();
+                // // Get today cash row
+                // $todayCash = Cash::where('date', $today)->first();
 
-                // Get previous day closing cash
-                $previousCashRow = Cash::where('date', '<', $today)
-                                        ->orderBy('date', 'desc')
-                                        ->first();
+                // // Get previous day closing cash
+                // $previousCashRow = Cash::where('date', '<', $today)
+                //                         ->orderBy('date', 'desc')
+                //                         ->first();
 
-                $previousCash = $previousCashRow ? $previousCashRow->cash : 0;
+                // $previousCash = $previousCashRow ? $previousCashRow->cash : 0;
 
-                // Net change for this action
-                $netAmount = $validatedData['grand_total'] - $validatedData['payment_amount'];
+                // // Net change for this action
+                // $netAmount = $validatedData['grand_total'] - $validatedData['payment_amount'];
 
-                if ($todayCash) {
+                // if ($todayCash) {
 
-                    // 👉 UPDATE same day row
-                    $todayCash->today_amount += $validatedData['grand_total'];
-                    $todayCash->cash = $previousCash + $todayCash->today_amount;
+                //     // 👉 UPDATE same day row
+                //     $todayCash->today_amount += $validatedData['grand_total'];
+                //     $todayCash->cash = $previousCash + $todayCash->today_amount;
 
-                    $todayCash->save();
+                //     $todayCash->save();
 
-                } else {
+                // } else {
 
-                    // 👉 CREATE new day row
-                    Cash::create([
-                        'date'         => $today,
-                        'today_amount' => $validatedData['grand_total'],
-                        'cash'         => $previousCash + $validatedData['grand_total'],
-                    ]);
-                }
+                //     // 👉 CREATE new day row
+                //     Cash::create([
+                //         'date'         => $today,
+                //         'today_amount' => $validatedData['grand_total'],
+                //         'cash'         => $previousCash + $validatedData['grand_total'],
+                //     ]);
+                // }
 
 
 
@@ -416,38 +418,12 @@ class ChalanController extends Controller
         'step'      => $stepText,  // 👈 NEW FIELD
     ]);
 
-                $today = Carbon::now('Asia/Dhaka')->toDateString();
+        $latestCash = Cash::latest()->first();  
 
-                // Get today cash row
-                $todayCash = Cash::where('date', $today)->first();
+        $latestCash->cash -= $request->amount;  
 
-                // Get previous day closing cash
-                $previousCashRow = Cash::where('date', '<', $today)
-                                        ->orderBy('date', 'desc')
-                                        ->first();
+        $latestCash->save(); 
 
-                $previousCash = $previousCashRow ? $previousCashRow->cash : 0;
-
-                // Net change for this action
-                $netAmount = $validatedData['grand_total'] - $validatedData['payment_amount'];
-
-                if ($todayCash) {
-
-                    // 👉 UPDATE same day row
-                    $todayCash->today_amount += $validatedData['grand_total'];
-                    $todayCash->cash = $previousCash + $todayCash->today_amount;
-
-                    $todayCash->save();
-
-                } else {
-
-                    // 👉 CREATE new day row
-                    Cash::create([
-                        'date'         => $today,
-                        'today_amount' => $validatedData['grand_total'],
-                        'cash'         => $previousCash + $validatedData['grand_total'],
-                    ]);
-                }
     return response()->json([
         'message' => 'Amount returned successfully',
         'step'    => $stepText,
@@ -639,12 +615,12 @@ $amanotReturned = Chalan::whereNotNull('return_amounts')
                 // 'discount_percent' => $validatedData['overall_discount_percent'] ?? 0,
                 // 'vat_amount' => $validatedData['overall_vat_amount'] ?? 0,
                 // 'vat_percent' => $validatedData['overall_vat_percent'] ?? 0,
-                'commission_amount' => $validatedData['commission_amount'] ?? 0,
-                'commission_percent' => $validatedData['commission_percent'] ?? 0,
-                'total_expense' => $validatedData['total_expenses_amount'] ?? 0,
-                'subtotal' => $validatedData['sub_total'] ?? 0,
-                'total_amount' => $validatedData['grand_total'] ?? 0,
-                'payment_amount' => $validatedData['payment_amount'] ?? 0,
+                'commission_amount' => round($validatedData['commission_amount'] ?? 0),
+                'commission_percent' => round($validatedData['commission_percent'] ?? 0),
+                'total_expense' => round($validatedData['total_expenses_amount'] ?? 0),
+                'subtotal' => round($validatedData['sub_total'] ?? 0),
+                'total_amount' => round($validatedData['grand_total'] ?? 0),
+                'payment_amount' => round($validatedData['payment_amount'] ?? 0),
             ]);
 
             // Delete items that were not in the submitted data

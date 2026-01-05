@@ -44,7 +44,8 @@
                             <div class="col-lg-6 col-sm-6 col-12">
                                 <div class="form-group">
                                     <label>উত্তোলনের তারিখ</label>
-                                    <input type="date" name="date" class="form-control" id="" placeholder="">
+                                     <input type="date" name="date" class="form-control" value="{{ date('Y-m-d') }}"
+                                        readonly>
                                 </div>
                             </div>
 

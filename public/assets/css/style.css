@@ -98,6 +98,28 @@ body {
     overflow-x: hidden
 }
 
+.balance-display {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.balance-positive {
+    color: #28a745 !important;
+}
+
+.balance-negative {
+    color: #dc3545 !important;
+}
+
+.balance-zero {
+    color: #6c757d !important;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    font-weight: 500;
+}
+
 * {
     box-sizing: border-box
 }

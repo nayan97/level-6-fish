@@ -117,7 +117,7 @@
         <div class="content">
             <div class="page-header">
                 <div class="page-title">
-                    <h4>নতুন দৈনিক ক্রয়</h4>
+                    <h4>নতুন দৈনিক নিলাম</h4>
                 </div>
             </div>
 
@@ -185,11 +185,11 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 18%;">পাইকার</th>
-                                        <th style="width: 18%;">পণ্য আইটেম</th>
-                                        <th style="width: 18%;">মূল্য</th>
+                                        <th style="width: 18%;">পণ্য / আইটেম</th>
+                                        <th style="width: 18%;">প্রতি কেজি মূল্য</th>
                                         <th style="width: 18%;">পরিমাণ</th>
                                         <th style="width: 15%;">মোট মূল্য</th>
-                                        <th style="width: 20%;">পেমেন্ট</th>
+                                        <th style="width: 20%;">নগদ পেমেন্ট</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -397,7 +397,7 @@
 
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="mohajon_name_modal">্মহাজনের নাম <span class="text-danger">*</span></label>
+                            <label for="mohajon_name_modal">মহাজনের নাম <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="mohajon_name_modal" name="name" required>
                         </div>
                         <div class="form-group mt-3">
@@ -550,66 +550,66 @@
         });
 
 
-   $(document).ready(function() {
+        $(document).ready(function() {
 
-    // AJAX submit for adding new Mohajon
-    $('#mohajonModal form').submit(function(e) {
-        e.preventDefault();
+            // AJAX submit for adding new Mohajon
+            $('#mohajonModal form').submit(function(e) {
+                e.preventDefault();
 
-        let formData = $(this).serialize();
+                let formData = $(this).serialize();
 
-        $.ajax({
-            url: "{{ route('mohajons.store') }}",
-            method: "POST",
-            data: formData,
-            dataType: "json",
-            headers: {
-                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
-                "Accept": "application/json"
-            },
+                $.ajax({
+                    url: "{{ route('mohajons.store') }}",
+                    method: "POST",
+                    data: formData,
+                    dataType: "json",
+                    headers: {
+                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+                        "Accept": "application/json"
+                    },
 
-            success: function(res) {
+                    success: function(res) {
 
-                // Close modal
-                $('#mohajonModal').modal('hide');
+                        // Close modal
+                        $('#mohajonModal').modal('hide');
 
-                // Add new mohajon to select dropdown
-                $('select[name="mohajon_id"]').append(
-                    `<option value="${res.mohajon.id}">${res.mohajon.name}</option>`
-                );
+                        // Add new mohajon to select dropdown
+                        $('select[name="mohajon_id"]').append(
+                            `<option value="${res.mohajon.id}">${res.mohajon.name}</option>`
+                        );
 
-                // Auto-select newly created Mohajon
-                $('select[name="mohajon_id"]').val(res.mohajon.id).trigger('change');
+                        // Auto-select newly created Mohajon
+                        $('select[name="mohajon_id"]').val(res.mohajon.id).trigger('change');
 
-                // Update select2
-                $('.select2').select2();
+                        // Update select2
+                        $('.select2').select2();
 
-                // Success message
-                Swal.fire({
-                    icon: 'success',
-                    title: 'মহাজন সংযোজন সম্পন্ন',
-                    timer: 1500
+                        // Success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'মহাজন সংযোজন সম্পন্ন',
+                            timer: 1500
+                        });
+                    },
+
+                    error: function(err) {
+                        let msg = 'কিছু ভুল হয়েছে';
+
+                        if (err.responseJSON && err.responseJSON.errors) {
+                            msg = Object.values(err.responseJSON.errors)
+                                .map(v => v.join(', '))
+                                .join("\n");
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: msg
+                        });
+                    }
                 });
-            },
+            });
 
-            error: function(err) {
-                let msg = 'কিছু ভুল হয়েছে';
-
-                if (err.responseJSON && err.responseJSON.errors) {
-                    msg = Object.values(err.responseJSON.errors)
-                        .map(v => v.join(', '))
-                        .join("\n");
-                }
-
-                Swal.fire({
-                    icon: 'error',
-                    title: msg
-                });
-            }
         });
-    });
-
-});
 
 
 
@@ -687,6 +687,21 @@
 
 
 
+        });
+    </script>
+    <script>
+        // Clear 0 on first focus
+        $(document).on('focus', 'input[name$="[payment_amount]"]', function() {
+            if ($(this).val() === '0') {
+                $(this).val('');
+            }
+        });
+
+        // Restore 0 if left empty
+        $(document).on('blur', 'input[name$="[payment_amount]"]', function() {
+            if ($(this).val() === '') {
+                $(this).val('0');
+            }
         });
     </script>
 @endsection

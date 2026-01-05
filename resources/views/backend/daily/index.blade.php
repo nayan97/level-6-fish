@@ -15,11 +15,11 @@
         <div class="content">
             <div class="page-header">
                 <div class="page-title">
-                    <h4>দৈনিক ক্রয়ের তালিকা</h4>
+                    <h4>দৈনিক নিলামের তালিকা</h4>
                 </div>
                 <div class="page-btn">
                     <a href="{{ route('daily.create') }}" class="btn btn-added"><img
-                            src="{{ asset('assets/img/icons/plus.svg') }}" alt="img" class="me-1">দৈনিক চালান
+                            src="{{ asset('assets/img/icons/plus.svg') }}" alt="img" class="me-1">দৈনিক নিলাম
                         সংযোজন</a>
                 </div>
             </div>
@@ -75,7 +75,7 @@
                                         <td>
                                             @if ($daily->status == 1)
                                                 <button class="me-3 btn btn-secondary text-white" disabled>
-                                                    চালান তৈরি হয়েছে
+                                                    চালান তৈরি হয়েছে
                                                 </button>
                                             @else
                                                 <a class="me-3 btn btn-primary text-white"

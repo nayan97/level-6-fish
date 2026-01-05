@@ -15,8 +15,8 @@
         <div class="content">
             <div class="page-header">
                 <div class="page-title">
-                    <h4>চালান বাকি হিসাব</h4>
-                    <h6>চালান বাকি হিসাব পরিচালনা</h6>
+                    <h4>নিলাম বাকি হিসাব</h4>
+                    {{-- <h6>চালান বাকি হিসাব পরিচালনা</h6> --}}
                 </div>
             </div>
 
@@ -37,12 +37,12 @@
                             <thead>
                                 <tr>
                                     <th>Sl No.</th>
-                                    <th>চালান খাত</th>
-                                    <th>Mohajon Name</th>
+                                    <th>ইনভয়েস নাম্বার</th>
+                                    <th>মহাজনের নাম</th>
                                     <th>ফেরত পরিমান</th>
                                     <th>তারিখ</th>
                                     <th>নোট</th>
-                                    <th>Action</th>
+                                    <th>অপশন</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -99,7 +99,7 @@
             <div class="modal-content">
 
                 <div class="modal-header">
-                    <h5 class="modal-title">Chalan Return Details</h5>
+                    <h5 class="modal-title">নিলাম বাকি ফেরত তালিকা</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
@@ -109,12 +109,12 @@
                         <thead>
                             <tr>
                                 <th>Sl No.</th>
-                                <th>চালান খাত</th>
+                                <th>ইনভয়েস নাম্বার</th>
                                 <th>ফেরত পরিমান</th>
                                 <th>পেমেন্ট নাম্বার</th>
                                 <th>তারিখ</th>
                                 <th>নোট</th>
-                                <th>Action</th>
+                                <th>অপশন</th>
                             </tr>
                         </thead>
 

@@ -22,7 +22,7 @@
             <form id="returnForm">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Return Amanot Amount</h5>
+                        <h5 class="modal-title">আমানত ফেরত</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
 
@@ -30,19 +30,24 @@
                         <input type="hidden" id="returnAmanotId">
 
                         <div class="form-group">
-                            <label>Return Amount</label>
+                            <label>ফেরত পরিমান</label>
+                            <input type="number" class="form-control" readonly id="currentDue">
+                        </div>
+
+                        <div class="form-group">
+                            <label>ফেরত পরিমান</label>
                             <input type="number" min="1" class="form-control" id="returnAmount" required>
                         </div>
 
                         <div class="form-group mt-2">
-                            <label>Note</label>
+                            <label>নোট</label>
                             <textarea class="form-control" id="returnNote"></textarea>
                         </div>
                     </div>
 
                     <div class="modal-footer">
-                        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Return</button>
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">বাতিল করুন</button>
+                        <button type="submit" class="btn btn-primary">জমা করুন</button>
                     </div>
                 </div>
             </form>
@@ -55,7 +60,7 @@
             <div class="page-header">
                 <div class="page-title">
                     <h4>আমানত হিসাব</h4>
-                    <h6>আমানত হিসাব পরিচালনা</h6>
+                    {{-- <h6>আমানত হিসাব পরিচালনা</h6> --}}
                 </div>
                 <div class="page-btn">
                     <a href="{{ route('amanot.create') }}" class="btn btn-added"><img
@@ -108,11 +113,11 @@
                                     {{--                                </th> --}}
 
                                     <th>Sl No.</th>
-                                    <th>আমানতের খাত</th>
+                                    <th>আমানতের উৎস</th>
                                     <th>আমানতের পরিমান</th>
                                     <th>তারিখ</th>
                                     <th>নোট</th>
-                                    <th>Action</th>
+                                    <th>অপশন</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -128,13 +133,13 @@
                                             <td>
                                                 <button class="btn btn-sm btn-primary return-btn"
                                                     data-id="{{ $amanot->id }}" data-amount="{{ $amanot->amount }}">
-                                                    Return
+                                                    পরিশোধ করুন
                                                 </button>
 
-                                                <a class="btn btn-sm btn-danger text-white"
+                                                {{-- <a class="btn btn-sm btn-danger text-white"
                                                     href="{{ route('amanot.destroy', $amanot->id) }}">
                                                     Delete
-                                                </a>
+                                                </a> --}}
                                             </td>
                                         </tr>
                                     @endif
@@ -175,6 +180,8 @@
         $(document).on('click', '.return-btn', function() {
             let id = $(this).data('id');
             let amount = $(this).data('amount');
+            // show current due
+            $('#currentDue').val(amount);
 
             $('#returnAmanotId').val(id);
             $('#returnAmount').attr('max', amount);

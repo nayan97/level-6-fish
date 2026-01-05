@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
+use DB;
+use Carbon\Carbon;
+use App\Models\Cash;
 use App\Models\Daily;
+use App\Models\Charge;
 use App\Models\Mohajon;
 use App\Models\Product;
-use App\Models\Charge;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Carbon\Carbon;
-use DB;
 
 class DailyController extends Controller
 {
@@ -106,8 +107,8 @@ class DailyController extends Controller
                     'updated_at'      => now(),
                 ];
             }
-
             Daily::insert($chalanItemsData);
+            Cash::latest()->first()?->increment('cash', $payment );
 
             return redirect()->route('daily.index')->with('success', 'দৈনিক ক্রয় সফলভাবে তৈরি হয়েছে!');
         }
@@ -185,6 +186,7 @@ $daily = Daily::find($request->order_id);
 if ($daily) {
     $daily->update([
         'set_charged' => $daily->set_charged + $request->total_qty,
+        'amount' => $daily->amount + $request->charge_per_kg,
         'due' => $daily->due + $request->total_charge
     ]);
 }

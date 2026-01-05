@@ -25,10 +25,10 @@
                 <div class="page-title">
                     <h4>চালানের তালিকা</h4>
                 </div>
-                <div class="page-btn">
+                {{-- <div class="page-btn">
                     <a href="{{route('chalans.create')}}" class="btn btn-added"><img
                             src="{{asset('assets/img/icons/plus.svg')}}" alt="img" class="me-1">চালান সংযোজন</a>
-                </div>
+                </div> --}}
             </div>
 
             <div class="card">

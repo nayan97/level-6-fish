@@ -111,11 +111,11 @@ class DashboardController extends Controller
         //cash
         if($from&&$to){
             $totalcash = Cash::where('date', '>=', $from)
-            ->where('date', '<=', $to)->sum('today_amount');
+            ->where('date', '<=', $to)->sum('cash');
         }
         else
         {
-            $totalcash = Cash::sum('today_amount');
+            $totalcash = Cash::sum('cash');
 
         }
 
