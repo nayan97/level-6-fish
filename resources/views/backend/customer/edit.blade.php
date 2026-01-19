@@ -56,6 +56,12 @@
                                     <textarea class="form-control" name="address">{{ old('address', $customer->address ?? '') }}</textarea>
                                 </div>
                             </div>
+                            <div class="col-lg-6 col-sm-6 col-12">
+                                <div class="form-group">
+                                    <label>জের</label>
+                                    <input type="number" name="jer" class="form-control" id="" placeholder="পাইকারের জেরের পরিমাণ" value="{{ old('jer', $customer->jer ?? 0) }}">
+                                </div>
+                            </div>
                             <div class="col-lg-12">
                                 <button  type="submit" class="btn btn-submit me-2">Submit</button>
                                 <a href="{{route('customers.index')}}" class="btn btn-cancel">Cancel</a>

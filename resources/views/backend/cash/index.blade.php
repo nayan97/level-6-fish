@@ -80,9 +80,9 @@
                                             <a class="me-3" href="{{ route('cash.show', $cash->id) }}">
                                                 <img src="{{ asset('assets/img/icons/eye.svg') }}" alt="img">
                                             </a>
-                                            <a class="" href="{{ route('cash.destroy', $cash->id) }}">
+                                            {{-- <a class="" href="{{ route('cash.destroy', $cash->id) }}">
                                                 <img src="{{ asset('assets/img/icons/delete.svg') }}" alt="img">
-                                            </a>
+                                            </a> --}}
                                         </td>
                                     </tr>
                                 @endforeach

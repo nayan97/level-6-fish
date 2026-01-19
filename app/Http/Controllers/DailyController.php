@@ -38,11 +38,13 @@ class DailyController extends Controller
 
             $dailyKroy = $query->select(
                     'mohajon_id',
+                    'chalan_date',
                     'created_at',
                     'status',
+                    'chalan_id',
                     DB::raw('SUM(total_amount) as total_amount')
                 )
-                ->groupBy('mohajon_id', 'created_at', 'status')
+                ->groupBy('mohajon_id', 'chalan_date', 'created_at', 'status','chalan_id')
                 ->with('mohajon')
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -65,6 +67,7 @@ class DailyController extends Controller
 
         public function store(Request $request)
         {
+            $chalan_id = Daily::max('chalan_id') + 1?? 0;   
             $validatedData = $request->validate([
                 // Customer Validation
                 'mohajon_id' => 'required|exists:mohajons,id',
@@ -93,7 +96,9 @@ class DailyController extends Controller
                 $finalItemTotal = $itemQuantity * $itemUnitPrice;
                 $dueAmount      = $finalItemTotal - $payment;
 
+
                 $chalanItemsData[] = [
+                    'chalan_id'       => $chalan_id,
                     'mohajon_id'      => $mohajonId,
                     'customer_id'     => $item['paikar_name'],
                     'product_id'      => $item['item_name'],
@@ -112,6 +117,90 @@ class DailyController extends Controller
 
             return redirect()->route('daily.index')->with('success', 'দৈনিক ক্রয় সফলভাবে তৈরি হয়েছে!');
         }
+
+
+        public function daily_chalan_update(Request $request, $id)
+{
+
+// dd($request->all());
+    // Validate request
+    $validatedData = $request->validate([
+        'mohajon_id' => 'required|exists:mohajons,id',
+        'chalan_date' => 'required|date',
+
+        'items' => 'required|array|min:1',
+        'items.*.paikar_name' => 'required|exists:customers,id',
+        'items.*.item_name' => 'required|exists:products,id',
+        'items.*.quantity' => 'required|numeric|min:0.01',
+        'items.*.unit_price' => 'required|numeric|min:0',
+        'items.*.payment_amount' => 'nullable|numeric|min:0',
+    ]);
+
+    $chalanId   = $id;
+    $date       = $validatedData['chalan_date'];
+    $mohajonId  = $validatedData['mohajon_id'];
+
+    /** -----------------------------------------
+     *  STEP 1: Old cash rollback (optional but recommended)
+     * ----------------------------------------- */
+    $oldPayments = Daily::where('chalan_id', $chalanId)->sum('payment_amount');
+
+    if ($oldPayments > 0) {
+        Cash::latest()->first()?->decrement('cash', $oldPayments);
+    }
+
+    /** -----------------------------------------
+     *  STEP 2: Delete old chalan items
+     * ----------------------------------------- */
+    Daily::where('chalan_id', $chalanId)->delete();
+
+    /** -----------------------------------------
+     *  STEP 3: Insert updated items
+     * ----------------------------------------- */
+    $chalanItemsData = [];
+    $totalPayment = 0;
+
+    foreach ($validatedData['items'] as $item) {
+
+        $quantity   = (float) $item['quantity'];
+        $unitPrice  = (float) $item['unit_price'];
+        $payment    = (float) ($item['payment_amount'] ?? 0);
+
+        $totalAmount = $quantity * $unitPrice;
+        $dueAmount   = $totalAmount - $payment;
+
+        $totalPayment += $payment;
+
+        $chalanItemsData[] = [
+            'chalan_id'      => $chalanId,
+            'mohajon_id'     => $mohajonId,
+            'customer_id'    => $item['paikar_name'],
+            'product_id'     => $item['item_name'],
+            'chalan_date'    => $date,
+            'quantity'       => $quantity,
+            'amount'         => $unitPrice,
+            'total_amount'   => $totalAmount,
+            'payment_amount' => $payment,
+            'due'            => $dueAmount,
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ];
+    }
+
+    Daily::insert($chalanItemsData);
+
+    /** -----------------------------------------
+     *  STEP 4: Update cash again
+     * ----------------------------------------- */
+    if ($totalPayment > 0) {
+        Cash::latest()->first()?->increment('cash', $totalPayment);
+    }
+
+    return redirect()
+        ->route('daily.index')
+        ->with('success', 'দৈনিক চালান সফলভাবে আপডেট হয়েছে!');
+}
+
 
 
     public function destroy($id)
@@ -232,6 +321,20 @@ return redirect()->route('kroy.hishab', [
         $chargeLists = Charge::all();
         return view('backend.reports.charge_list', compact('chargeLists'));
 
+    }
+
+    public function daily_chalan_edit($id)
+    {
+        $dailyChalanItems = Daily::where('chalan_id', $id)->get();
+        $customers = Customer::all();
+        $mohajons = Mohajon::all();
+        $products = Product::all();
+
+        if ($dailyChalanItems->isEmpty()) {
+            return redirect()->route('daily.index')->with('error', 'চালান আইটেমগুলি পাওয়া যায়নি।');
+        }
+
+        return view('backend.daily.edit_chalan', compact('dailyChalanItems', 'customers', 'mohajons', 'products'));
     }
 
 

@@ -302,7 +302,7 @@ class ChalanController extends Controller
                         // ->where('status', 0)
                         ->update(['status' => 1]);
                 }
-            Cash::latest()->first()?->decrement('cash',  $validatedData['payment_amount'] );
+            Cash::latest()->first()?->decrement('cash',  $validatedData['payment_amount'] ?? 0 );
 
 
  

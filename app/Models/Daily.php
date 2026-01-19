@@ -20,6 +20,10 @@ class Daily extends Model
     // ];
     protected $guarded = [];
 
+    protected $casts = [
+    'chalan_date' => 'date',
+];
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);

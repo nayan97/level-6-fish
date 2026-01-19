@@ -47,7 +47,7 @@
                                 <th>Sl No.</th>
                                 <th>উত্তোলনের পরিমান</th>
                                 <th>তারিখ</th>
-                                <th>Action</th>
+                                <th>মন্তব্য</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -60,9 +60,9 @@
                                     <td>{{ $uttolon->amount }}</td>
                                     <td>{{ $uttolon->date }}</td>
                                     <td>
-                                        <a class="" href="{{route('uttolon.destroy', $uttolon->id)}}">
+                                        {{-- <a class="" href="{{route('uttolon.destroy', $uttolon->id)}}">
                                             <img src="{{asset('assets/img/icons/delete.svg')}}" alt="img">
-                                        </a>
+                                        </a> --}}
                                     </td>
                                 </tr>
                             @endforeach

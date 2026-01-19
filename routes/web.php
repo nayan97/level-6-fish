@@ -173,6 +173,9 @@ Route::middleware(['auth'])->group(function () {
     //Daily Buy Sazzad
     Route::get('/dashboard/daily/index', [DailyController::class, 'index'])->name('daily.index');
     Route::get('/dashboard/daily/create', [DailyController::class, 'create'])->name('daily.create');
+    Route::get('/dashboard/daily/chalan/edit/{id}', [DailyController::class, 'daily_chalan_edit'])->name('daily.chalan.edit');
+    Route::post('/dashboard/daily/chalan/update/{id}', [DailyController::class, 'daily_chalan_update'])->name('daily.chalan.update');
+    
     Route::post('/dashboard/daily/store', [DailyController::class, 'store'])->name('daily.store');
     Route::get('/dashboard/kroyhishab', [DailyController::class, 'kroyhishab'])->name('kroy.hishab');
     Route::delete('/dashboard/daily/destroy/{id}', [DailyController::class, 'destroy'])->name('daily.destroy');

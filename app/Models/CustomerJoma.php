@@ -12,6 +12,7 @@ class CustomerJoma extends Model
     protected $fillable = [
         'customer_id',
         'jomartaka',
+        'discount_amount',
         'jomardate',
     ];
 

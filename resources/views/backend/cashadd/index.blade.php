@@ -47,7 +47,7 @@
                                 <th>Sl No.</th>
                                 <th>ক্যাশ সংযোগের পরিমান</th>
                                 <th>তারিখ</th>
-                                <th>Action</th>
+                                <th>মন্তব্য</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -60,9 +60,10 @@
                                     <td>{{ $cashAdd->amount }}</td>
                                     <td>{{ $cashAdd->date }}</td>
                                     <td>
-                                        <a class="" href="{{route('cashadd.destroy', $cashAdd->id)}}">
+
+                                        {{-- <a class="" href="{{route('cashadd.destroy', $cashAdd->id)}}">
                                             <img src="{{asset('assets/img/icons/delete.svg')}}" alt="img">
-                                        </a>
+                                        </a> --}}
                                     </td>
                                 </tr>
                             @endforeach

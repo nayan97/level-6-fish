@@ -13,7 +13,7 @@ class CustomerController extends Controller
 {
     public function index()
     {
-        $customers = Customer::latest()->paginate(20);
+        $customers = Customer::latest()->get();
         return view('backend.customer.index', compact('customers'));
     }
 
@@ -117,12 +117,23 @@ public function store(Request $request)
     }
 
 
-    public function jomaList()
-    {
-        $customerJomas = CustomerJoma::with('customer')->latest()->paginate(30);
-        return view('backend.customer.jomatalika', compact('customerJomas'));
+public function jomaList(Request $request)
+{
+    $fromDate = Carbon::today()->startOfDay();
+    $toDate   = Carbon::today()->endOfDay();
+
+    if ($request->filled('from_date') && $request->filled('to_date')) {
+        $fromDate = Carbon::parse($request->from_date)->startOfDay();
+        $toDate   = Carbon::parse($request->to_date)->endOfDay();
     }
 
+    $customerJomas = CustomerJoma::with('customer')
+        ->whereBetween('created_at', [$fromDate, $toDate])
+        ->latest()
+        ->get();
+
+    return view('backend.customer.jomatalika', compact('customerJomas', 'fromDate', 'toDate'));
+}
 
     public function jomaCreate()
     {
@@ -144,30 +155,37 @@ public function store(Request $request)
         public function jomastore(Request $request)
         {
             // Validate with correct field names (match your form)
-            $request->validate([
-                'customer_id' => 'required|exists:customers,id',
-                'amount' => 'required|numeric|min:0.01', // Changed from jomartaka to amount
-                'jomardate' => 'required|date',
-            ]);
+        $validated = $request->validate([
+            'customer_id' => 'required|exists:customers,id',
+            'amount' => 'required|numeric|min:0',
+            'discount_amount' => 'nullable|numeric|min:0',
+            'jomardate' => 'required|date',
+        ]);
 
-            // Debug: Check what data is coming
-            // dd($request->all());
+        // ✅ discount_amount default 0
+        $discount = $validated['discount_amount'] ?? 0;
+        
+        // ✅ amount = amount + discount_amount
+        $finalAmount = $validated['amount'] + $discount;
+        
+        $formattedDate = Carbon::parse($request->jomardate)->format('Y-m-d');
+        // dd($discount);
 
-            // Format the date properly
-            $formattedDate = Carbon::parse($request->jomardate)->format('Y-m-d');
+        CustomerJoma::create([
+            'customer_id' => $validated['customer_id'],
+            'jomartaka' => $finalAmount,  // 🔥 এখানে final amount save হবে
+            'discount_amount' => $discount,
+            'jomardate' => $formattedDate,
+            'user_id' => auth()->id(), 
+        ]);
 
-            // Create the record with proper field mapping
-            CustomerJoma::create([
-                'customer_id' => $request->customer_id,
-                'jomartaka' => $request->amount, // Map 'amount' to 'jomartaka' column
-                'jomardate' => $formattedDate,
-                'user_id' => auth()->id(), // Add if needed
-            ]);
+
+
 
             // Update cash
             $latestCash = Cash::latest()->first();
             if ($latestCash) {
-                $latestCash->increment('cash', $request->amount);
+                $latestCash->increment('cash', $validated['amount'],);
             }
 
             return redirect()->route('customers_joma.index')->with('success', 'জমা সফলভাবে তৈরি হয়েছে!');

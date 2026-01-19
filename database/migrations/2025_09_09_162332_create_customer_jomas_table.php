@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
             $table->decimal('jomartaka', 12, 2)->default(0); 
+            $table->decimal('discount_amount', 12, 2)->default(0); 
             $table->date('jomardate')->nullable();  
             $table->timestamps();
         });

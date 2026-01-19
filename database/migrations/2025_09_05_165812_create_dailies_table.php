@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('dailies', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('chalan_id')->nullable();
+
             $table->foreignId('mohajon_id')->constrained()->onDelete('cascade');
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');

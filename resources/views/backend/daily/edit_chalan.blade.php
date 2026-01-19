@@ -112,18 +112,17 @@
 
 
 @section('content')
-
     <div class="page-wrapper">
         <div class="content">
             <div class="page-header">
                 <div class="page-title">
-                    <h4>নতুন দৈনিক নিলাম</h4>
+                    <h4>নিলাম আপডেট</h4>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-body">
-                    <form class="form-horizontal" action="{{ route('daily.store') }}" method="POST">
+                    <form class="form-horizontal" action="{{ route('daily.chalan.update', $dailyChalanItems->first()->chalan_id) }}" method="POST">
                         @csrf
                         <div class="row justify-content-between">
                             <div class="col-md-3">
@@ -135,7 +134,7 @@
                                             <option value="">মহাজন নির্বাচন করুন</option>
                                             @foreach ($mohajons as $mohajon)
                                                 <option value="{{ $mohajon->id }}"
-                                                    {{ old('mohajon_id') == $mohajon->id ? 'selected' : '' }}>
+                                                    {{ $mohajon->id == $dailyChalanItems->first()->mohajon_id ? 'selected' : '' }}>
                                                     {{ $mohajon->name }}</option>
                                             @endforeach
                                         </select>
@@ -157,17 +156,15 @@
 
                             <div class="col-md-2">
                                 <div class="form-group">
-                                    <label>তারিখ</label>
-                                    <input type="date" name="chalan_date"
+                                    <label for="chalan_date">তারিখ</label>
+
+                                    <input type="date" id="chalan_date" name="chalan_date"
                                         class="form-control @error('chalan_date') is-invalid @enderror"
-                                        value="{{ old('chalan_date', date('Y-m-d')) }}">
-                                    @error('chalan_date')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
+                                        value="{{ optional($dailyChalanItems->first())->chalan_date ? \Carbon\Carbon::parse($dailyChalanItems->first()->chalan_date)->format('Y-m-d') : '' }}"
+                                        readonly>
                                 </div>
                             </div>
+
 
 
                         </div>
@@ -195,82 +192,7 @@
                                 </thead>
                                 <tbody id="fish-items">
                                     {{-- Iterate through old input or provide a default empty row --}}
-                                    @if (old('items'))
-                                        @foreach (old('items') as $index => $item)
-                                            <tr class="fish-item">
-
-                                                <td>
-                                                    <select name="items[{{ $index }}][paikar_name]"
-                                                        class="form-control product-select select2 @error('items.{{ $index }}.paikar_name') is-invalid @enderror">
-                                                        <option value="">পাইকার</option>
-                                                        @foreach ($customers as $customer)
-                                                            <option value="{{ $customer->id }}"
-                                                                {{ old('items.' . $index . '.paikar_name') == $customer->name ? 'selected' : '' }}>
-                                                                {{ $customer->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error('items.{{ $index }}.paikar_name')
-                                                        <span class="invalid-feedback" role="alert">
-                                                            <strong>{{ $message }}</strong>
-                                                        </span>
-                                                    @enderror
-                                                </td>
-
-                                                <td>
-                                                    <select name="items[{{ $index }}][item_name]"
-                                                        class="form-control product-select select2 @error('items.{{ $index }}.item_name') is-invalid @enderror">
-                                                        <option value="">পণ্য নির্বাচন করুন</option>
-                                                        @foreach ($products as $product)
-                                                            <option value="{{ $product->id }}"
-                                                                {{ old('items.' . $index . '.item_name') == $product->name ? 'selected' : '' }}>
-                                                                {{ $product->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error('items.{{ $index }}.item_name')
-                                                        <span class="invalid-feedback" role="alert">
-                                                            <strong>{{ $message }}</strong>
-                                                        </span>
-                                                    @enderror
-                                                </td>
-
-                                                <td>
-                                                    <input type="number" name="items[{{ $index }}][unit_price]"
-                                                        class="form-control item-unit-price @error('items.' . $index . '.unit_price') is-invalid @enderror"
-                                                        placeholder="মূল্য" step="0.01"
-                                                        value="{{ $item['unit_price'] ?? '' }}">
-                                                    @error('items.' . $index . '.unit_price')
-                                                        <span class="invalid-feedback" role="alert">
-                                                            <strong>{{ $message }}</strong>
-                                                        </span>
-                                                    @enderror
-                                                </td>
-                                                <td>
-                                                    <input type="number" name="items[{{ $index }}][quantity]"
-                                                        class="form-control item-quantity @error('items.' . $index . '.quantity') is-invalid @enderror"
-                                                        placeholder="পরিমাণ" step="0.01"
-                                                        value="{{ $item['quantity'] ?? '' }}">
-                                                    @error('items.' . $index . '.quantity')
-                                                        <span class="invalid-feedback" role="alert">
-                                                            <strong>{{ $message }}</strong>
-                                                        </span>
-                                                    @enderror
-                                                </td>
-                                                <td>
-                                                    <input type="text" class="form-control item-total-price" readonly
-                                                        placeholder="0.00"
-                                                        value="{{ ($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0) }}">
-                                                </td>
-                                                <td>
-                                                    <input type="number" class="form-control"
-                                                        name="items[{{ $index }}][payment_amount]" placeholder="0"
-                                                        value="0">
-                                                </td>
-                                                <td>
-                                                    <button type="button" class="btn btn-danger remove-fish">×</button>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    @else
+                                    @foreach ($dailyChalanItems as $chalanitem)
                                         <tr class="fish-item">
 
                                             <td>
@@ -278,7 +200,9 @@
                                                     class="form-control product-select select2">
                                                     <option value="">পাইকার</option>
                                                     @foreach ($customers as $customer)
-                                                        <option value="{{ $customer->id }}">{{ $customer->name }}
+                                                        <option value="{{ $customer->id }}"
+                                                            @if ($chalanitem->customer_id == $customer->id) selected @endif>
+                                                            {{ $customer->name }}
                                                         </option>
                                                     @endforeach
                                                 </select>
@@ -289,34 +213,45 @@
                                                     class="form-control product-select select2">
                                                     <option value="">পণ্য নির্বাচন করুন</option>
                                                     @foreach ($products as $product)
-                                                        <option value="{{ $product->id }}">{{ $product->name }}</option>
+                                                        <option value="{{ $product->id }}"
+                                                            @if ($chalanitem->product_id == $product->id) selected @endif>
+                                                            {{ $product->name }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                             </td>
 
                                             <td>
                                                 <input type="number" name="items[0][unit_price]"
-                                                    class="form-control item-unit-price" placeholder="মূল্য"
-                                                    step="0.01">
+                                                    class="form-control item-unit-price" placeholder="মূল্য" step="0.01"
+                                                    value="{{ $chalanitem->amount }}">
                                             </td>
                                             <td>
                                                 <input type="number" name="items[0][quantity]"
-                                                    class="form-control item-quantity" placeholder="পরিমাণ"
-                                                    step="0.01">
+                                                    class="form-control item-quantity" placeholder="পরিমাণ" step="0.01"
+                                                    value="{{ $chalanitem->quantity }}">
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control item-total-price" readonly
-                                                    placeholder="0.00">
+                                                    placeholder="0.00" value="{{ $chalanitem->total_amount }}">
                                             </td>
                                             <td>
-                                                <input type="number" class="form-control"
-                                                    name="items[0][payment_amount]" placeholder="0" value="0">
+                                                @if ($chalanitem->payment_amount < 0)
+                                                    <input type="number" class="form-control"
+                                                        name="items[0][payment_amount]" placeholder="0" value="0">
+                                                @else
+                                                    <input type="number" class="form-control"
+                                                        name="items[0][payment_amount]" placeholder="0"
+                                                        value="{{ $chalanitem->payment_amount }}">
+                                                @endif
                                             </td>
                                             <td>
                                                 <button type="button" class="btn btn-danger remove-fish">x</button>
                                             </td>
                                         </tr>
-                                    @endif
+                                    @endforeach
+
+
                                 </tbody>
                             </table>
                         </div>
@@ -410,14 +345,13 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">সংরক্ষণ করুন</button>
+                        <button type="submit" class="btn btn-primary">আপডেট করুন</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">বাতিল</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
 @endsection
 
 @section('js')
@@ -494,9 +428,9 @@
                     calculateItemTotal($(this).closest('.fish-item'));
                 });
 
-// Add new fish item
-$('#add-fish').click(function() {
-    const item = `
+            // Add new fish item
+            $('#add-fish').click(function() {
+                const item = `
         <tr class="fish-item">
             <td>
                 <select name="items[${itemIndex}][paikar_name]" class="form-control product-select select2">
@@ -531,17 +465,17 @@ $('#add-fish').click(function() {
             </td>
         </tr>`;
 
-    // 1. Append the item
-    const $newItem = $(item);
-    $('#fish-items').append($newItem);
+                // 1. Append the item
+                const $newItem = $(item);
+                $('#fish-items').append($newItem);
 
-    // 2. Initialize Select2 on the new row's dropdowns
-    $newItem.find('.select2').select2({
-        width: '100%' // Ensures it fills the table cell correctly
-    });
+                // 2. Initialize Select2 on the new row's dropdowns
+                $newItem.find('.select2').select2({
+                    width: '100%' // Ensures it fills the table cell correctly
+                });
 
-    itemIndex++;
-});
+                itemIndex++;
+            });
             // Remove fish item
             $(document).on('click', '.remove-fish', function() {
                 $(this).closest('.fish-item').remove();
@@ -704,4 +638,39 @@ $('#add-fish').click(function() {
             }
         });
     </script>
+    <script>
+    function reindexItems() {
+        $('#fish-items tr.fish-item').each(function(index) {
+
+            $(this).find('select, input').each(function() {
+                let name = $(this).attr('name');
+
+                if (name) {
+                    name = name.replace(/items\[\d+\]/, 'items[' + index + ']');
+                    $(this).attr('name', name);
+                }
+            });
+
+        });
+    }
+
+    // 🔥 Before form submit
+    $('form').on('submit', function () {
+        reindexItems();
+    });
+
+    // 🔥 After add row
+    $('#add-fish').on('click', function () {
+        setTimeout(() => {
+            reindexItems();
+        }, 50);
+    });
+
+    // 🔥 After remove row
+    $(document).on('click', '.remove-fish', function () {
+        $(this).closest('tr').remove();
+        reindexItems();
+    });
+</script>
+
 @endsection

@@ -16,7 +16,7 @@
         <div class="content">
             <div class="page-header">
                 <div class="page-title">
-                    <h4>ক্যাশ সংযোজন</h4>
+                    <h4>দৈনিক ক্যাশ ক্লোজ</h4>
                 </div>
             </div>
 

@@ -68,31 +68,57 @@
                                 @foreach ($dailyKroy as $daily)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($daily->created_at)->format('d M Y') }}</td>
+                                     <td>{{ \Carbon\Carbon::parse($daily->chalan_date)->format('d M Y') }}</td>
+
+
+
+
+
                                         <td>{{ $daily->mohajon->name ?? 'N/A' }}</td>
-                                   
+
                                         <td>{{ number_format($daily->total_amount, 2) }}</td>
                                         <td>
                                             @if ($daily->status == 1)
                                                 <button class="me-3 btn btn-secondary text-white" disabled>
                                                     চালান তৈরি হয়েছে
                                                 </button>
+
+                                                {{-- Disabled Edit Icon --}}
+                                                <img src="{{ asset('assets/img/icons/edit.svg') }}" alt="img"
+                                                    class="opacity-50" style="cursor: not-allowed;">
+
+                                                {{-- Disabled Delete Icon --}}
+                                                <button type="button" class="btn-sm border-0 bg-transparent p-0" disabled
+                                                    style="cursor: not-allowed;">
+                                                    <img src="{{ asset('assets/img/icons/delete.svg') }}" alt="img"
+                                                        class="opacity-50">
+                                                </button>
                                             @else
                                                 <a class="me-3 btn btn-primary text-white"
                                                     href="{{ route('chalansbymohajon.create', ['mohajon_id' => $daily->mohajon_id, 'date' => $daily->created_at]) }}">
                                                     চালান তৈরি করুন
                                                 </a>
+                                                <a class="me-3"
+                                                    href="{{ route('daily.chalan.edit', $daily->chalan_id) }}">
+                                                    <img src="{{ asset('assets/img/icons/edit.svg') }}" alt="img">
+                                                </a>
+                                                <form
+                                                    action="{{ route('daily.destroy_by_date', ['mohajon_id' => $daily->mohajon_id, 'date' => $daily->created_at]) }}"
+                                                    method="POST" class="delete-form d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn-sm border-0 delete-confirm"><img
+                                                            src="{{ asset('assets/img/icons/delete.svg') }}"
+                                                            alt="img"></button>
+                                                </form>
                                             @endif
 
-                                            <form
-                                                action="{{ route('daily.destroy_by_date', ['mohajon_id' => $daily->mohajon_id, 'date' => $daily->created_at]) }}"
-                                                method="POST" class="delete-form d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn-sm border-0 delete-confirm"><img
-                                                        src="{{ asset('assets/img/icons/delete.svg') }}"
-                                                        alt="img"></button>
-                                            </form>
+
+
+
+
+
+
                                         </td>
                                     </tr>
                                 @endforeach
