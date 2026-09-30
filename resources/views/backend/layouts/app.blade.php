@@ -13,7 +13,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Fish Market</title>
 
-    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('backend/s.png') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('backend/arot.png') }}">
 
 
 
@@ -33,7 +33,7 @@
 
             <div class="header-left active" style="background: #d1dcff;">
                 <a href="{{ route('admin.dashboard') }}" class="logo">
-                    <img src="{{ asset('backend/s.png') }}" alt="">
+                    <img src="{{ asset('backend/arot.png') }}" alt="">
                 </a>
                 <a href="index.html" class="logo-small">
                     <img src="{{ asset('assets/img/logo-small.png') }}" alt="">
@@ -76,13 +76,13 @@
                 {{--                </a> --}}
                 {{--                <div class="dropdown-menu dropdown-menu-right"> --}}
                 {{--                    <a href="javascript:void(0);" class="dropdown-item"> --}}
-                {{--                        <img src="{{ asset('assets/img/flags/us.png') }}" alt="" height="16"> English --}}
+                {{--                        <img src="{{ asset('assets/img/flags/uarot.png') }}" alt="" height="16"> English --}}
                 {{--                    </a> --}}
                 {{--                    <a href="javascript:void(0);" class="dropdown-item"> --}}
                 {{--                        <img src="{{ asset('assets/img/flags/fr.png') }}" alt="" height="16"> French --}}
                 {{--                    </a> --}}
                 {{--                    <a href="javascript:void(0);" class="dropdown-item"> --}}
-                {{--                        <img src="{{ asset('assets/img/flags/es.png') }}" alt="" height="16"> Spanish --}}
+                {{--                        <img src="{{ asset('assets/img/flags/earot.png') }}" alt="" height="16"> Spanish --}}
                 {{--                    </a> --}}
                 {{--                    <a href="javascript:void(0);" class="dropdown-item"> --}}
                 {{--                        <img src="{{ asset('assets/img/flags/de.png') }}" alt="" height="16"> German --}}
@@ -271,6 +271,27 @@
                                 </li>
                             </ul>
                         </li>
+                        @role('admin')
+                            <li class="submenu">
+                                <a href="javascript:void(0);">
+                                    <img src="{{ asset('assets/img/icons/product.svg') }}" alt="img">
+                                    <span>অনুমতি</span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <ul>
+                                    <li>
+                                        <a href="{{ route('permissions.index') }}">অনুমতি তালিকা</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('roles.index') }}">Roll তালিকা</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('users.index') }}">ব্যবহারকারী তালিকা</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        @endrole
+
                         <li class="submenu">
                             <a href="javascript:void(0);"><img src="{{ asset('assets/img/icons/product.svg') }}"
                                     alt="img"><span>মহাজন</span> <span class="menu-arrow"></span></a>
@@ -425,7 +446,7 @@
                         <li>
                             <a href="{{ route('amanot.history') }}"
                                 class="{{ request()->routeIs('amanot.history') ? 'active' : '' }}">
-                               আমানত ফেরতের তালিকা
+                                আমানত ফেরতের তালিকা
                             </a>
                         </li>
                     </ul>
@@ -438,7 +459,7 @@
                             <li>
                                 <a href="{{ route('chalans.index') }}"
                                     class="{{ request()->routeIs('chalans.index') ? 'active' : '' }}">
-                                চালানের তালিকা
+                                    চালানের তালিকা
                                 </a>
                             </li>
                         </ul>
@@ -461,21 +482,22 @@
                             </li>
                         </ul>
                     </li>
-
+                    @role('admin')
                     <li class="{{ request()->routeIs('uttolon.index') ? 'active' : '' }}">
                         <a href="{{ route('cash.index') }}"><img src="{{ asset('assets/img/icons/cash.svg') }}"
                                 alt="img"><span>দৈনিক ক্যাশ ক্লোজ</span></a>
                     </li>
                     <li class="{{ request()->routeIs('cashadd.index') ? 'active' : '' }}">
                         <a href="{{ route('cashadd.index') }}"><img
-                                src="{{ asset('assets/img/icons/wallet1.svg') }}"
-                                alt="img"><span>ক্যাশ সংযোজন</span></a>
+                                src="{{ asset('assets/img/icons/wallet1.svg') }}" alt="img"><span>ক্যাশ
+                                সংযোজন</span></a>
                     </li>
                     <li class="{{ request()->routeIs('uttolon.index') ? 'active' : '' }}">
                         <a href="{{ route('uttolon.index') }}"><img
-                                src="{{ asset('assets/img/icons/wallet1.svg') }}"
-                                alt="img"><span>ক্যাশ উত্তোলন</span></a>
+                                src="{{ asset('assets/img/icons/wallet1.svg') }}" alt="img"><span>ক্যাশ
+                                উত্তোলন</span></a>
                     </li>
+                    @endrole
 
 
                     {{--                    <li class="submenu"> --}}

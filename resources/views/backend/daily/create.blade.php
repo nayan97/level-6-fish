@@ -437,8 +437,9 @@
             // Initialize select2
             $('.select2').select2();
 
-            let itemIndex = 1;
-            let expenseIndex = 1; // Keep track of expense index
+            let itemIndex = {{ old('items') ? count(old('items')) : 1 }};
+            const STORAGE_KEY = 'daily_auction_draft';
+            const hasOldItems = {{ old('items') ? 'true' : 'false' }};
 
             function calculateItemTotal(row) {
                 const quantity = parseFloat(row.find('.item-quantity').val()) || 0;
@@ -472,80 +473,164 @@
                 let summaryHtml = '';
                 $.each(paikarTotals, function(paikarId, data) {
                     summaryHtml += `
-                        <div class="summary-row">
-                            <span class="label">${data.name}</span>
-                            <span class="value">৳ ${data.total.toFixed(2)}</span>
-                            {{-- <input type="number" name="payments[${paikarId}]" 
-                                class="form-control w-50" placeholder="পেমেন্টের পরিমান"> --}}
-                        </div>
-                    `;
+                <div class="summary-row">
+                    <span class="label">${data.name}</span>
+                    <span class="value">৳ ${data.total.toFixed(2)}</span>
+                </div>
+            `;
                 });
 
                 $('#paikar-summary').html(summaryHtml);
-
             }
 
-            // Initial calculation on page load
-            calculateGrandTotal();
+            // ---------- LOCALSTORAGE DRAFT LOGIC ----------
 
-            // Event listeners for changes
-            $(document).on('input', '.item-quantity, .item-unit-price',
-                function() { // Removed item-level discount/vat listeners
-                    calculateItemTotal($(this).closest('.fish-item'));
+            function getRowsData() {
+                let rows = [];
+                $('.fish-item').each(function() {
+                    const $row = $(this);
+                    rows.push({
+                        paikar_name: $row.find('select[name*="[paikar_name]"]').val() || '',
+                        item_name: $row.find('select[name*="[item_name]"]').val() || '',
+                        unit_price: $row.find('.item-unit-price').val() || '',
+                        quantity: $row.find('.item-quantity').val() || '',
+                        payment_amount: $row.find('input[name*="[payment_amount]"]').val() || '0',
+                    });
+                });
+                return rows;
+            }
+
+            function saveDraft() {
+                const data = {
+                    mohajon_id: $('select[name="mohajon_id"]').val() || '',
+                    chalan_date: $('input[name="chalan_date"]').val() || '',
+                    items: getRowsData()
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            }
+
+            function clearDraft() {
+                localStorage.removeItem(STORAGE_KEY);
+            }
+
+            // Builds one row's HTML, optionally pre-filled with saved data
+            function buildItemRow(index, prefill) {
+                prefill = prefill || {};
+                const $row = $(`
+            <tr class="fish-item">
+                <td>
+                    <select name="items[${index}][paikar_name]" class="form-control product-select select2">
+                        <option value="">পাইকার নির্বাচন করুন</option>
+                        @foreach ($customers as $customer)
+                            <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                        @endforeach
+                    </select>
+                </td>
+                <td>
+                    <select name="items[${index}][item_name]" class="form-control product-select select2">
+                        <option value="">পণ্য নির্বাচন করুন</option>
+                        @foreach ($products as $product)
+                            <option value="{{ $product->id }}">{{ $product->name }}</option>
+                        @endforeach
+                    </select>
+                </td>
+                <td>
+                    <input type="number" name="items[${index}][unit_price]" class="form-control item-unit-price" placeholder="মূল্য" step="0.01">
+                </td>
+                <td>
+                    <input type="number" name="items[${index}][quantity]" class="form-control item-quantity" placeholder="পরিমাণ" step="0.01">
+                </td>
+                <td>
+                    <input type="text" class="form-control item-total-price" readonly placeholder="0.00">
+                </td>
+                <td>
+                    <input type="number" class="form-control" name="items[${index}][payment_amount]" placeholder="পেমেন্ট পরিমাণ" value="0">
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger remove-fish">×</button>
+                </td>
+            </tr>
+        `);
+
+                $row.find('.item-unit-price').val(prefill.unit_price || '');
+                $row.find('.item-quantity').val(prefill.quantity || '');
+                $row.find('input[name*="[payment_amount]"]').val(prefill.payment_amount || '0');
+
+                $row.find('.select2').select2({
+                    width: '100%'
                 });
 
-// Add new fish item
-$('#add-fish').click(function() {
-    const item = `
-        <tr class="fish-item">
-            <td>
-                <select name="items[${itemIndex}][paikar_name]" class="form-control product-select select2">
-                    <option value="">পাইকার নির্বাচন করুন</option>
-                    @foreach ($customers as $customer)
-                        <option value="{{ $customer->id }}">{{ $customer->name }}</option>
-                    @endforeach
-                </select>
-            </td>
-            <td>
-                <select name="items[${itemIndex}][item_name]" class="form-control product-select select2">
-                    <option value="">পণ্য নির্বাচন করুন</option>
-                    @foreach ($products as $product)
-                        <option value="{{ $product->id }}">{{ $product->name }}</option>
-                    @endforeach
-                </select>
-            </td>
-            <td>
-                <input type="number" name="items[${itemIndex}][unit_price]" class="form-control item-unit-price" placeholder="মূল্য" step="0.01">
-            </td>
-            <td>
-                <input type="number" name="items[${itemIndex}][quantity]" class="form-control item-quantity" placeholder="পরিমাণ" step="0.01">
-            </td>
-            <td>
-                <input type="text" class="form-control item-total-price" readonly placeholder="0.00">
-            </td>
-            <td>
-                <input type="number" class="form-control" name="items[${itemIndex}][payment_amount]" placeholder="পেমেন্ট পরিমাণ" value="0">
-            </td>
-            <td>
-                <button type="button" class="btn btn-danger remove-fish">×</button>
-            </td>
-        </tr>`;
+                if (prefill.paikar_name) {
+                    $row.find('select[name*="[paikar_name]"]').val(prefill.paikar_name).trigger('change');
+                }
+                if (prefill.item_name) {
+                    $row.find('select[name*="[item_name]"]').val(prefill.item_name).trigger('change');
+                }
 
-    // 1. Append the item
-    const $newItem = $(item);
-    $('#fish-items').append($newItem);
+                // recalc total for this row if prefilled
+                calculateItemTotal($row);
 
-    // 2. Initialize Select2 on the new row's dropdowns
-    $newItem.find('.select2').select2({
-        width: '100%' // Ensures it fills the table cell correctly
-    });
+                return $row;
+            }
 
-    itemIndex++;
-});
+            // Restore draft on plain page load (only if PHP didn't already fill old() data)
+            if (!hasOldItems) {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    try {
+                        const draft = JSON.parse(saved);
+                        if (draft.items && draft.items.length > 0) {
+                            $('#fish-items').empty();
+                            itemIndex = 0;
+                            draft.items.forEach(function(item) {
+                                $('#fish-items').append(buildItemRow(itemIndex, item));
+                                itemIndex++;
+                            });
+
+                            if (draft.mohajon_id) {
+                                $('select[name="mohajon_id"]').val(draft.mohajon_id).trigger('change');
+                            }
+                            if (draft.chalan_date) {
+                                $('input[name="chalan_date"]').val(draft.chalan_date);
+                            }
+                        }
+                    } catch (e) {
+                        clearDraft();
+                    }
+                }
+            }
+
+            calculateGrandTotal();
+
+            // Save on any relevant change
+            $(document).on('input change',
+                '.item-quantity, .item-unit-price, .product-select, input[name="chalan_date"], select[name="mohajon_id"], input[name*="[payment_amount]"]',
+                function() {
+                    if ($(this).hasClass('item-quantity') || $(this).hasClass('item-unit-price')) {
+                        calculateItemTotal($(this).closest('.fish-item'));
+                    }
+                    saveDraft();
+                });
+
+            // Add new fish item
+            $('#add-fish').click(function() {
+                const $newItem = buildItemRow(itemIndex);
+                $('#fish-items').append($newItem);
+                itemIndex++;
+                saveDraft();
+            });
+
             // Remove fish item
             $(document).on('click', '.remove-fish', function() {
                 $(this).closest('.fish-item').remove();
-                calculateGrandTotal(); // Recalculate after removing an item
+                calculateGrandTotal();
+                saveDraft();
+            });
+
+            // Clear draft right before the real submit — success redirects away,
+            // failure comes back via old() so localStorage isn't needed either way
+            $('form.form-horizontal').on('submit', function() {
+                clearDraft();
             });
         });
 

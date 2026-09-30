@@ -3,6 +3,10 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
+use Database\Seeders\CashesTableSeeder;
+use Database\Seeders\CustomerSeeder;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -16,14 +20,21 @@ class DatabaseSeeder extends Seeder
      protected static ?string $password;
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
+        $this->call([
+            RoleSeeder::class,
+            CashesTableSeeder::class,
+            CustomerSeeder::class,
+            ProductSeeder::class,
+            MohajonSeeder::class,
+        ]);
 
-        \App\Models\User::factory()->create([
+        $admin = User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@gmail.com',
-            'email_verified_at' => null,
-            'password' => static::$password ??= Hash::make('12345678'),
+            'password' => Hash::make('12345678'),
             'remember_token' => Str::random(10),
         ]);
+
+        $admin->assignRole('admin');
     }
 }

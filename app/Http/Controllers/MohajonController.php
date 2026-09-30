@@ -9,7 +9,7 @@ class MohajonController extends Controller
 {
     public function index()
     {
-        $mohajons = Mohajon::latest()->paginate(20);
+        $mohajons = Mohajon::latest()->get();   
         return view('backend.mohajon.index', compact('mohajons'));
     }
 
