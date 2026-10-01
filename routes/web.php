@@ -174,6 +174,9 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/chalan-report', [ChalanController::class, 'report'])->name('chalan.report');
             Route::post('/dashboard/chalanbaki/{id}/return', [ChalanController::class, 'bakiReturn'])->name('chalanbaki.return');
 
+            Route::put('/chalans-return/{id}', [ChalanController::class, 'updateBakiReturn']);
+            Route::delete('/chalans-return/{id}', [ChalanController::class, 'destroyBakiReturn']);
+
             //Daily Buy Sazzad
             Route::get('/dashboard/daily/index', [DailyController::class, 'index'])->name('daily.index');
             Route::get('/dashboard/daily/create', [DailyController::class, 'create'])->name('daily.create');

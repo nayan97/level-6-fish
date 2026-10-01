@@ -57,12 +57,9 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
 
-                                        {{-- Record ID --}}
-
                                         {{-- Related Chalan Invoice No --}}
                                         <td>{{ $return->invoice_no ?? 'N/A' }}</td>
-                                       <td>{{ $return->mohajon->name ?? 'N/A' }}</td>
-
+                                        <td>{{ $return->mohajon->name ?? 'N/A' }}</td>
 
                                         {{-- Return Amount --}}
                                         <td>{{ $sum }}</td>
@@ -83,8 +80,6 @@
                                     </tr>
                                 @endforeach
                             </tbody>
-
-
                         </table>
                     </div>
                 </div>
@@ -109,7 +104,7 @@
                         <thead>
                             <tr>
                                 <th>Sl No.</th>
-                                <th>ইনভয়েস নাম্বার</th>
+                                <th>ইনভয়েস নাম্বার</th>
                                 <th>ফেরত পরিমান</th>
                                 <th>পেমেন্ট নাম্বার</th>
                                 <th>তারিখ</th>
@@ -125,7 +120,7 @@
                             <tr>
                                 <th colspan="2" class="text-end">মোট</th>
                                 <th id="chalanTotalAmount">0</th>
-                                <th colspan="3"></th>
+                                <th colspan="4"></th>
                             </tr>
                         </tfoot>
                     </table>
@@ -157,6 +152,8 @@
         let currentPage = 1;
         let perPage = 5;
         let returnsData = [];
+        let currentChalanId = null;
+        let changed = false;
 
         // Render Chalan Return Table
         function renderTable() {
@@ -198,6 +195,26 @@
             $("#chalanTotalAmount").text(total.toFixed(2));
         }
 
+        // Load returns from server (optionally open modal)
+        function loadReturns(chalanId, openModal = false) {
+            $.get("/chalans-return/show/" + chalanId, function(res) {
+                returnsData = res;
+
+                // delete এর পর page খালি হয়ে গেলে আগের page এ যান
+                if (currentPage > 1 && (currentPage - 1) * perPage >= returnsData.length) {
+                    currentPage--;
+                }
+
+                renderTable();
+
+                if (openModal) {
+                    $("#chalanReturnDetailsModal").modal("show");
+                }
+            }).fail(function() {
+                alert("Something went wrong!");
+            });
+        }
+
         // Next Page
         $(document).on("click", "#chalanNextPage", function() {
             if (currentPage * perPage < returnsData.length) {
@@ -214,62 +231,105 @@
             }
         });
 
-        // Load Chalan Return History & Open Modal
+        // View button: Load Chalan Return History & Open Modal
         $(document).on("click", ".viewChalanReturnBtn", function(e) {
             e.preventDefault();
 
-            let chalanId = $(this).data("id");
+            currentChalanId = $(this).data("id");
+            currentPage = 1;
+            changed = false;
 
-            $.ajax({
-                url: "/chalans-return/show/" + chalanId,
-                method: "GET",
-                success: function(res) {
+            loadReturns(currentChalanId, true);
+        });
 
-                    returnsData = res;
-                    console.log("Chalan Returns:", returnsData);
+        // Modal বন্ধ হলে মূল টেবিলের যোগফল refresh
+        $("#chalanReturnDetailsModal").on("hidden.bs.modal", function() {
+            if (changed) {
+                location.reload();
+            }
+        });
 
-                    currentPage = 1;
-                    renderTable();
+        // EDIT
+        $(document).on("click", ".editChalanReturnBtn", function() {
+            const id = $(this).data("id");
+            const item = returnsData.find(r => r.id == id);
+            if (!item) return;
 
-                    $("#chalanReturnDetailsModal").modal("show");
-                },
-                error: function() {
-                    alert("Something went wrong!");
+            Swal.fire({
+                target: document.getElementById('chalanReturnDetailsModal'), // 👈 এটা যোগ করুন
+                title: 'ফেরত এডিট করুন',
+                html: `
+        <input id="swalAmount" type="number" min="1" class="swal2-input" placeholder="Amount" value="${item.amount}">
+        <input id="swalNote" type="text" class="swal2-input" placeholder="Note" value="${item.note ?? ''}">
+    `,
+                showCancelButton: true,
+                confirmButtonText: 'Update',
+                didOpen: () => document.getElementById('swalAmount').focus(),
+                preConfirm: () => {
+
+                    const amount = document.getElementById('swalAmount').value;
+                    if (!amount || amount < 1) {
+                        Swal.showValidationMessage('সঠিক amount দিন');
+                        return false;
+                    }
+                    return {
+                        amount,
+                        note: document.getElementById('swalNote').value
+                    };
                 }
+            }).then(result => {
+                if (!result.isConfirmed) return;
+
+                $.ajax({
+                    url: "/chalans-return/" + id,
+                    method: "PUT",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        ...result.value
+                    },
+                    success: function() {
+                        changed = true;
+                        loadReturns(currentChalanId);
+                        Swal.fire('Updated!', '', 'success');
+                    },
+                    error: function(xhr) {
+                        Swal.fire('Error', xhr.responseJSON?.message ?? 'Something went wrong',
+                            'error');
+                    }
+                });
             });
         });
 
+        // DELETE
+        $(document).on("click", ".deleteChalanReturnBtn", function() {
+            const id = $(this).data("id");
 
-
-        // Edit button
-        $(document).on("click", ".editBtn", function() {
-            let id = $(this).data("id");
-            alert("Edit ID: " + id);
-            // You can open edit form here
-        });
-
-        // Delete button
-        $(document).on("click", ".deleteBtn", function() {
-            let id = $(this).data("id");
-
-            if (confirm("Are you sure to delete?")) {
+            Swal.fire({
+                title: 'নিশ্চিত?',
+                text: 'এই ফেরত মুছলে cash এ amount আবার যোগ হবে',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'হ্যাঁ, ডিলিট',
+            }).then(result => {
+                if (!result.isConfirmed) return;
 
                 $.ajax({
-                    url: "/amanot-return/delete/" + id,
+                    url: "/chalans-return/" + id,
                     method: "DELETE",
                     data: {
                         _token: "{{ csrf_token() }}"
                     },
                     success: function() {
-                        alert("Deleted successfully!");
-
-                        // Remove deleted item from array
-                        returnsData = returnsData.filter(item => item.id !== id);
-
-                        renderTable();
+                        changed = true;
+                        loadReturns(currentChalanId);
+                        Swal.fire('Deleted!', '', 'success');
+                    },
+                    error: function(xhr) {
+                        Swal.fire('Error', xhr.responseJSON?.message ?? 'Something went wrong',
+                            'error');
                     }
                 });
-            }
+            });
         });
     </script>
 @endsection

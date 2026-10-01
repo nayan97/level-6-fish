@@ -657,4 +657,92 @@ $amanotReturned = Chalan::whereNotNull('return_amounts')
         return redirect()->route('chalans.index')->with('success', 'চালান সফলভাবে ডিলিট হয়েছে!');
     }
 
+        private function ordinal(int $n): string
+    {
+        $suffix = 'th';
+        if ($n % 10 == 1 && $n != 11) $suffix = 'st';
+        if ($n % 10 == 2 && $n != 12) $suffix = 'nd';
+        if ($n % 10 == 3 && $n != 13) $suffix = 'rd';
+        return $n . $suffix . ' Installment';
+    }
+
+    // Step নম্বর ও return_amounts JSON আবার record থেকে বানায়
+    private function syncBakiReturns(Chalan $chalan): void
+    {
+        $returns = ChalanBakiReturn::where('chalan_id', $chalan->id)->orderBy('id')->get();
+
+        foreach ($returns as $i => $r) {
+            $r->step = $this->ordinal($i + 1);
+            $r->save();
+        }
+
+        $chalan->return_amounts = $returns->isEmpty()
+            ? null // null হলে history পেজে আর দেখাবে না
+            : json_encode($returns->pluck('amount')->map(fn ($a) => (float) $a)->values());
+
+        $chalan->save();
+    }
+
+    public function updateBakiReturn(Request $request, $id)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:1',
+            'note'   => 'nullable|string',
+        ]);
+
+        return DB::transaction(function () use ($request, $id) {
+            $return = ChalanBakiReturn::lockForUpdate()->findOrFail($id);
+            $chalan = Chalan::lockForUpdate()->findOrFail($return->chalan_id);
+
+            $diff = (float) $request->amount - (float) $return->amount;
+
+            if ($chalan->payment_amount + $diff > $chalan->total_amount) {
+                return response()->json([
+                    'message' => 'Payment amount cannot be greater than total amount'
+                ], 422);
+            }
+
+            $return->update([
+                'amount' => $request->amount,
+                'note'   => $request->note,
+            ]);
+
+            $chalan->payment_amount += $diff;
+            $this->syncBakiReturns($chalan); // chalan save-ও এখানে হয়
+
+            // Cash adjust: amount বাড়লে cash কমবে, কমলে cash বাড়বে
+            $cash = Cash::latest()->lockForUpdate()->first();
+            if ($cash) {
+                $cash->cash -= $diff;
+                $cash->save();
+            }
+
+            return response()->json(['message' => 'Updated successfully']);
+        });
+    }
+
+    public function destroyBakiReturn($id)
+    {
+        return DB::transaction(function () use ($id) {
+            $return = ChalanBakiReturn::lockForUpdate()->findOrFail($id);
+            $chalan = Chalan::lockForUpdate()->findOrFail($return->chalan_id);
+
+            $amount = (float) $return->amount;
+
+            $chalan->payment_amount -= $amount;
+            $return->delete();
+            $this->syncBakiReturns($chalan);
+
+            // Cash ফেরত যোগ হবে
+            $cash = Cash::latest()->lockForUpdate()->first();
+            if ($cash) {
+                $cash->cash += $amount;
+                $cash->save();
+            }
+
+            return response()->json(['message' => 'Deleted successfully']);
+        });
+    }
+
 }
+
