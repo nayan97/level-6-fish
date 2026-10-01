@@ -26,12 +26,12 @@
 
                         <div class="form-group">
                             <label>বাকির পরিমান</label>
-                            <input type="number" class="form-control" readonly id="currentDue">
+                            <input type="number" step="0.01" class="form-control" readonly id="currentDue">
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group mt-2">
                             <label>ফেরত পরিমান</label>
-                            <input type="number" min="1" class="form-control" id="returnAmount" required>
+                            <input type="number" min="0.01" step="0.01" class="form-control" id="returnAmount" required>
                         </div>
 
                         <div class="form-group mt-2">
@@ -41,7 +41,6 @@
                     </div>
 
                     <div class="modal-footer">
-                        <!-- FIXED HERE -->
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">বাতিল করুন</button>
                         <button type="submit" class="btn btn-primary">জমা করুন</button>
                     </div>
@@ -98,20 +97,25 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php $serial = 0; @endphp
 
                                 @foreach ($chalans as $chalan)
-                                    @if ($chalan->total_amount != $chalan->payment_amount)
+                                    @php $due = round($chalan->total_amount - $chalan->payment_amount, 2); @endphp
+
+                                    @if ($due > 0)
+                                        @php $serial++; @endphp
                                         <tr>
-                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $serial }}</td>
                                             <td>{{ $chalan->invoice_no }}</td>
                                             <td>{{ \Carbon\Carbon::parse($chalan->chalan_date)->format('d M Y') }}</td>
                                             <td>{{ $chalan->mohajon->name ?? 'N/A' }}</td>
-                                            <td>৳ {{ number_format($chalan->total_amount - $chalan->payment_amount, 2) }}
-                                            </td>
+                                            {{-- Formatted only for display --}}
+                                            <td>৳ {{ number_format($due, 2) }}</td>
                                             <td>
-                                                <button class="btn btn-primary text-white return-btn"
+                                                {{-- Raw number (no commas) for the input field --}}
+                                                <button type="button" class="btn btn-primary text-white return-btn"
                                                     data-id="{{ $chalan->id }}"
-                                                    data-amount="{{ number_format($chalan->total_amount - $chalan->payment_amount, 2)}}">
+                                                    data-amount="{{ number_format($due, 2, '.', '') }}">
                                                     পরিশোধ করুন
                                                 </button>
 
@@ -122,7 +126,6 @@
                                         </tr>
                                     @endif
                                 @endforeach
-
                             </tbody>
                         </table>
                     </div>
@@ -148,13 +151,16 @@
     <script>
         $(document).on('click', '.return-btn', function() {
             let id = $(this).data('id');
-            let amount = $(this).data('amount');
+            // use attr() so jQuery doesn't auto-convert the value
+            let amount = parseFloat($(this).attr('data-amount'));
 
-            // show current due
             $('#currentDue').val(amount);
-
             $('#returnAmanotId').val(id);
-            $('#returnAmount').attr('max', amount);
+            $('#returnAmount')
+                .val('')
+                .attr('max', amount)
+                .attr('step', '0.01');
+            $('#returnNote').val('');
 
             $('#returnModal').modal('show');
         });
@@ -175,11 +181,15 @@
                     _token: "{{ csrf_token() }}"
                 },
                 success: function(res) {
-                    Swal.fire("Success!", res.message, "success");
-                    location.reload();
+                    $('#returnModal').modal('hide');
+                    Swal.fire("Success!", res.message, "success").then(function() {
+                        location.reload();
+                    });
                 },
                 error: function(err) {
-                    Swal.fire("Error!", err.responseJSON.message, "error");
+                    let msg = (err.responseJSON && err.responseJSON.message) ? err.responseJSON.message :
+                        'Something went wrong';
+                    Swal.fire("Error!", msg, "error");
                 }
             });
         });
