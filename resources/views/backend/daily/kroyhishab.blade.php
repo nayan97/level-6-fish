@@ -8,6 +8,38 @@
     <link rel="stylesheet" href="{{ asset('assets/plugins/fontawesome/css/fontawesome.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/plugins/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <style>
+        /* Table scrollbar mota korar jonno */
+        .table-responsive {
+            scrollbar-width: auto;
+            /* Firefox */
+
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            /* Chrome, Edge, Safari */
+            height: 26px;
+            /* horizontal scrollbar-er motatto */
+            width: 26px;
+            /* vertical scrollbar-er motatto */
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+
+            border-radius: 8px;
+            border: 3px solid #e9ecef;
+            /* thumb-er charidike gap */
+        }
+
+        /* .table-responsive::-webkit-scrollbar-thumb:hover {
+                
+            } */
+    </style>
 @endsection
 @php
     function en2bn($number)
@@ -22,11 +54,26 @@
 @section('content')
     <div class="page-wrapper">
         <div class="content">
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
             <div class="page-header">
                 <div class="page-title">
                     <h4>নিলামের তালিকা বিস্তারিত</h4>
                 </div>
             </div>
+
+
 
             <div class="card">
                 <div class="card-body">
@@ -64,16 +111,19 @@
                         <table class="table datanew">
                             <thead>
                                 <tr>
-                                    <th>সিরিয়াল নং</th>
+                                    <th>সিরিয়াল
+                                        <br>
+                                        নং
+                                    </th>
                                     <th>ক্রয়ের তারিখ</th>
                                     <th>মহাজনের নাম</th>
                                     <th>পাইকারের নাম</th>
                                     <th>পণ্যের নাম</th>
-                                    <th>পণ্যের পরিমাণ (কেজি)</th>
-                                    <th>চার্জ এড হয়েছে (কেজি)</th>
-                                    <th>পণ্যের দাম</th>
+                                    <th>পণ্যের <br> পরিমাণ <br> (কেজি)</th>
+                                    <th>চার্জ এড<br> হয়েছে <br> (কেজি)</th>
+                                    <th>পণ্যের <br> দাম</th>
                                     <th class="hidden">মোট টাকা</th>
-                                    <th class="hidden">নগদ পেমেন্ট</th>
+                                    <th class="hidden">নগদ <br> পেমেন্ট</th>
                                     <th>Total Bill</th>
                                     <th>অপশন</th>
                                 </tr>
@@ -638,6 +688,29 @@
                 let searchValue = "{{ request('search') }}";
                 if (searchValue && searchValue !== "null") {
                     $('#searchInput').val(decodeURIComponent(searchValue));
+                }
+            });
+        });
+    </script>
+    <script>
+        $(document).on('click', '.delete-confirm', function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
+            let form = $(this).closest('form');
+
+            Swal.fire({
+                title: 'আপনি কি নিশ্চিত?',
+                text: 'এই ক্রয়ের তথ্যটি মুছে ফেলা হবে!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'হ্যাঁ, মুছে ফেলুন',
+                cancelButtonText: 'বাতিল'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.trigger('submit');
                 }
             });
         });

@@ -208,11 +208,14 @@ class DailyController extends Controller
         $daily = Daily::find($id);
 
         if (!$daily) {
-            return redirect()->route('daily.index')->with('error', 'দৈনিক ক্রয় আইটেমটি পাওয়া যায়নি।');
+            return redirect()->route('kroy.hishab')
+                ->with('error', 'দৈনিক ক্রয় আইটেমটি পাওয়া যায়নি।');
         }
 
         $daily->delete();
 
+        return redirect()->back()
+            ->with('success', 'দৈনিক ক্রয় আইটেমটি সফলভাবে মুছে ফেলা হয়েছে।');
     }
 
     public function destroyByDate($mohajon_id, $date)
